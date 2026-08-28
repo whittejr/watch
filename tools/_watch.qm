@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model version="6.2.3" links="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.state-machine.com/qm/qm.xsd">
+ <framework name="qpc"/>
+ <package name="AOs" stereotype="0x02">
+  <class name="Watch" superclass="qpc::QActive">
+   <attribute name="timeEvt0" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <attribute name="instance" type="Watch" visibility="0x00" properties="0x01"/>
+   <statechart properties="0x00">
+    <initial target="../1">
+     <action>(void)par; // unused parameter
+QActive_subscribe(&amp;me-&gt;super, ENTER_SIG);
+QActive_subscribe(&amp;me-&gt;super, MODE_SIG);
+QActive_subscribe(&amp;me-&gt;super, BACK_SIG);
+QActive_subscribe(&amp;me-&gt;super, TOGGLE_SIG);</action>
+     <initial_glyph conn="15,14,5,0,6,5">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
+    <state name="active">
+     <entry>printf(&quot;-&gt;active-entry&quot;);</entry>
+     <initial target="../2">
+      <initial_glyph conn="29,41,5,0,3,3">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <tran trig="TICK">
+      <action>// SOMO O TEMPO AQUI, é JUSTO ATUALIZAR TAMBÉM
+printf(&quot;-&gt;tick-evt&quot;);</action>
+      <tran_glyph conn="17,42,5,-1,5">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="timekeeping">
+      <entry>printf(&quot;-&gt;timekeeping-entry&quot;);</entry>
+      <exit>printf(&quot;-&gt;timekeeping-exit&quot;);</exit>
+      <tran trig="MODE" target="../../3">
+       <tran_glyph conn="44,50,1,3,9">
+        <action box="1,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="28,44,16,12">
+       <entry box="1,2,6,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <state name="countdown_FACE">
+      <documentation>// SHOWS FACE</documentation>
+      <entry>printf(&quot;-&gt;countdown-entry&quot;);</entry>
+      <exit>printf(&quot;-&gt;countdown-exit&quot;);</exit>
+      <tran trig="TOGGLE">
+       <action>// STARTA OU PARA O CRONOMETRO</action>
+       <tran_glyph conn="53,61,3,-1,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="ENTER" target="../4">
+       <tran_glyph conn="53,42,3,3,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="MODE" target="../../5">
+       <tran_glyph conn="83,50,1,3,9">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="TIMEOUT" target="../../2">
+       <tran_glyph conn="68,32,0,0,-4,-30,16">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state name="countdown_config">
+       <documentation>// SHOWS CONFIG</documentation>
+       <entry>printf(&quot;-&gt;countdown_config-entry&quot;);
+//blink(me-&gt;time[sel_field])</entry>
+       <exit>printf(&quot;-&gt;countdown_config-exit&quot;);</exit>
+       <tran trig="MODE">
+        <action>// AFIRMA E AVANÇA CAMPO</action>
+        <tran_glyph conn="59,47,3,-1,8">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <tran trig="TOGGLE">
+        <action>// AUMENTA +1 O VALOR DO CAMPO HORA, MINUTO OU SEGUNDO
+
+// OBS -&gt; DEFINIDO PELA VARIÁVEL DE CONTROLE DE MODE.</action>
+        <tran_glyph conn="59,52,3,-1,8">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <tran trig="ENTER" target="../..">
+        <tran_glyph conn="59,45,3,3,-8,2,2">
+         <action box="-6,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="59,38,18,17">
+        <entry box="1,2,4,12"/>
+        <exit box="1,14,6,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="53,32,30,31">
+       <entry box="1,2,6,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <state name="time_date_FACE">
+      <documentation>// SHOWS FACE</documentation>
+      <entry>printf(&quot;-&gt;time_data-entry&quot;);</entry>
+      <exit>printf(&quot;-&gt;time_data-exit&quot;);</exit>
+      <tran trig="ENTER" target="../3">
+       <tran_glyph conn="115,42,3,3,8">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="TIMEOUT" target="../../2">
+       <tran_glyph conn="132,32,0,0,-4,-94,16">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="MODE" target="../../6">
+       <tran_glyph conn="131,63,2,0,8">
+        <action box="1,1,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state name="time_date_config">
+       <documentation>// SHOWS CONFIG</documentation>
+       <entry>printf(&quot;-&gt;time_date_config-entry&quot;);</entry>
+       <exit>printf(&quot;-&gt;time_date_config-exit&quot;);</exit>
+       <tran trig="MODE">
+        <action>// AFIRMA E AVANÇA CAMPO</action>
+        <tran_glyph conn="123,48,3,-1,10">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <tran trig="TOGGLE">
+        <tran_glyph conn="123,53,3,-1,10">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <tran trig="ENTER" target="../..">
+        <tran_glyph conn="123,46,3,3,-10,1,2">
+         <action box="-6,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="123,40,20,17">
+        <entry box="1,2,6,2"/>
+        <exit box="1,4,6,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="115,32,33,31">
+       <entry box="1,2,6,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <state name="heart_rate">
+      <entry>printf(&quot;-&gt;heartrate-entry&quot;);</entry>
+      <exit>printf(&quot;-&gt;heartrate-exit&quot;);</exit>
+      <tran trig="MODE" target="../../4">
+       <tran_glyph conn="108,50,1,3,7">
+        <action box="1,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="TIMEOUT" target="../../2">
+       <tran_glyph conn="101,44,0,0,-16,-63,16">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="92,44,16,12">
+       <entry box="1,2,6,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <state name="settings_FACE">
+      <documentation>// SHOWS FACE</documentation>
+      <entry>printf(&quot;-&gt;settings-entry&quot;);</entry>
+      <exit>printf(&quot;-&gt;settings-exit&quot;);</exit>
+      <tran trig="ENTER" target="../2">
+       <tran_glyph conn="111,81,3,3,10">
+        <action box="1,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="MODE" target="../../2">
+       <tran_glyph conn="111,90,3,2,-73,-34">
+        <action box="-6,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state name="settings">
+       <documentation>// SHOW SETTINGS</documentation>
+       <entry>printf(&quot;-&gt;settings_config-entry&quot;);</entry>
+       <exit>printf(&quot;-&gt;settings_config-exit&quot;);</exit>
+       <tran trig="ENTER" target="../..">
+        <tran_glyph conn="121,84,3,3,-12,2,2">
+         <action box="-6,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <tran trig="TOGGLE">
+        <tran_glyph conn="121,90,3,-1,7">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <tran trig="MODE">
+        <tran_glyph conn="121,86,3,-1,7">
+         <action box="0,-2,10,2"/>
+        </tran_glyph>
+       </tran>
+       <state_glyph node="121,78,19,15">
+        <entry box="1,2,6,2"/>
+        <exit box="1,4,6,2"/>
+       </state_glyph>
+      </state>
+      <state_glyph node="111,71,38,30">
+       <entry box="1,2,6,2"/>
+       <exit box="1,4,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="17,19,141,87">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="HR_FACE">
+     <entry>//entry_face(HR_FACE);</entry>
+     <tran trig="ENTER" target="../2">
+      <tran_glyph conn="168,101,3,3,15">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="TIMEOUT">
+      <tran_glyph conn="168,121,3,-1,8">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="HR_measuring">
+      <state_glyph node="183,94,32,19"/>
+     </state>
+     <state_glyph node="168,76,60,55">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="343,261"/>
+   </statechart>
+  </class>
+  <operation name="Watch_ctor" type="void" visibility="0x00" properties="0x00">
+   <code>Watch *me = &amp;Watch_instance;
+QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Watch_initial));</code>
+  </operation>
+  <attribute name="AO_Watch" type="QActive* const" visibility="0x00" properties="0x00">
+   <code>= &amp;Watch_instance.super;</code>
+  </attribute>
+ </package>
+ <directory name="./watch/src">
+  <file name="HSM.c">
+   <text>#include &quot;qpc.h&quot;
+#include &quot;bsp.h&quot;
+
+// DECLARA OS MÉTODOS
+$declare${AOs::Watch}
+
+// CRIA O OBJETO
+$define${AOs::AO_Watch}
+
+$define${AOs::Watch_ctor}
+
+// CRIA OS 
+$define${AOs::Watch}</text>
+  </file>
+  <file name="HSM.h"/>
+ </directory>
+ <directory name="./watch/hsm-pc-simulation">
+  <file name="simu.c">
+   <text>#include &lt;stdio.h&gt;
+
+#include &quot;qpc.h&quot;
+#include &quot;bsp.h&quot;
+
+// DECLARA OS MÉTODOS
+$declare${AOs::Watch}
+
+// CRIA O OBJETO
+$define${AOs::AO_Watch}
+
+$define${AOs::Watch_ctor}
+
+// CRIA OS 
+$define${AOs::Watch}</text>
+  </file>
+  <file name="simu.h"/>
+ </directory>
+</model>
