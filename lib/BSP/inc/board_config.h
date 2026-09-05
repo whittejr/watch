@@ -9,23 +9,19 @@
 
 /* USER DISPLAY PINS (LS013B7DH03) */
 #define DISP_CS_PORT      GPIOB
-#define DISP_CS_PIN       GPIO_PIN_0
+#define DISP_CS_PIN       GPIO_PIN_2
 #define DISP_ON_PORT      GPIOB
 #define DISP_ON_PIN       GPIO_PIN_1
 #define DISP_EXTCOM_PORT  GPIOB
 #define DISP_EXTCOM_PIN   GPIO_PIN_2
 
-/* Compatibility aliases for display HAL */
-#define MIP_CS_PORT       DISP_CS_PORT
-#define MIP_CS_PIN        DISP_CS_PIN
-#define MIP_DISP_PORT     DISP_ON_PORT
-#define MIP_DISP_PIN      DISP_ON_PIN
-
 /* SPI1 PINS (Standard for WB55) */
 #define SCK_PORT     GPIOA
 #define SCK_PIN      GPIO_PIN_5
 #define MOSI_PORT    GPIOA
-#define MOSI_PIN     GPIO_PIN_7
+#define MOSI_PIN     GPIO_PIN_7                                                                                                         
+
+
 
 /* I2C BUS (Restored for compilation) */
 #define I2C_INSTANCE      I2C1
@@ -38,6 +34,10 @@
 #define BUTTON_PORT       GPIOB
 #define BUTTON_PIN        GPIO_PIN_9
 #define ACCEL_CS_PORT     GPIOA
-#define ACCEL_CS_PIN      GPIO_PIN_1
+#define ACCEL_CS_PIN      GPIO_PIN_8
+
+// UART
+#define uart_pin    GPIO_PIN_6 | GPIO_PIN_7
+#define uart_port   GPIOB
 
 #endif // BOARD_CONFIG_H

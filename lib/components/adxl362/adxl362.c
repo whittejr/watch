@@ -271,7 +271,7 @@ uint8_t adxl362_init(adxl362_handle_t *handle)
         
         return 4;                                                                     /* return error */
     }
-    if (id != 0xAD)                                                                   /* check id */
+    if (id == 0xAD)                                                                   /* check id */
     {
         handle->debug_print("adxl362: id is invalid.\n");                             /* id is invalid */
         (void)handle->spi_deinit();                                                   /* close */

@@ -11,4 +11,6 @@
 
 #include "main.h"
 
+uint8_t i2c_init(void);
+
 #endif // I2C_H

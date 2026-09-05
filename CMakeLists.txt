@@ -7,6 +7,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(EXECUTABLE "firmware")
 
+set(THIRD_PARTY_QP "${CMAKE_CURRENT_SOURCE_DIR}/lib/third_party")
+set(AO_APP_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/tools/watch/src")
+
 if(NOT DEFINED MCU_FAMILY)
     message(FATAL_ERROR "MCU_FAMILY não definida!")
 endif()
@@ -23,13 +26,22 @@ endif()
 
 file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
     "core/src/*.c"
-    "lib/BSP/src/*.c"
+    "lib/bsp/src/*.c"
     "lib/components/*.c"
+
+    "${THIRD_PARTY_QP}/qpc/src/qf/*.c"
+    "${THIRD_PARTY_QP}/qpc/src/qv/*.c"
+    "${THIRD_PARTY_QP}/qpc/ports/arm-cm/qv/gnu/*.c"
+    "${AO_APP_SOURCE}/*.c"
 )
 file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS 
     "core/inc/*.h" 
-    "lib/BSP/inc/*.h" 
+    "lib/bsp/inc/*.h" 
     "lib/components/*.h"
+
+    "${THIRD_PARTY_QP}/qpc/include/*.h"    
+    "${THIRD_PARTY_QP}/qpc/ports/arm-cm/qv/gnu/*.h"    
+    "${AO_APP_SOURCE}/*.h"
 )
 
 set(APP_INCLUDES "")
@@ -46,7 +58,7 @@ add_executable(${EXECUTABLE} ${APP_SOURCES} ${HAL_SOURCES})
 
 target_include_directories(${EXECUTABLE} PRIVATE 
     ${APP_INCLUDES}
-    ${HAL_INCLUDES} 
+    ${HAL_INCLUDES}
 )
 
 target_compile_definitions(${EXECUTABLE} PRIVATE USE_HAL_DRIVER ${TARGET_MCU})

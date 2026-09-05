@@ -1,81 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model version="6.2.3" links="0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.state-machine.com/qm/qm.xsd">
  <framework name="qpc"/>
- <package name="AOs" stereotype="0x02">
-  <class name="Watch" superclass="qpc::QActive">
+ <package name="Components" stereotype="0x02">
+  <class name="GuiMgr" superclass="qpc::QActive">
    <attribute name="timeEvt0" type="QTimeEvt" visibility="0x02" properties="0x00"/>
-   <attribute name="instance" type="Watch" visibility="0x00" properties="0x01"/>
+   <attribute name="inst" type="GuiMgr" visibility="0x00" properties="0x01"/>
+   <attribute name="hour" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <attribute name="minute" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <attribute name="second" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <attribute name="curr_mode" type="uint8_t" visibility="0x02" properties="0x00"/>
+   <attribute name="time_format" type="uint8_t" visibility="0x00" properties="0x00"/>
    <statechart properties="0x00">
+    <documentation>char buf[10];
+bsp_datetime_t dt;
+bsp_get_time(&amp;dt);
+
+snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, me-&gt;hour, me-&gt;minute, me-&gt;second);
+
+bsp_display_write_string_ssd1306(30, 30, buf);</documentation>
     <initial target="../1">
      <action>(void)par; // unused parameter
 QActive_subscribe(&amp;me-&gt;super, ENTER_SIG);
 QActive_subscribe(&amp;me-&gt;super, MODE_SIG);
 QActive_subscribe(&amp;me-&gt;super, BACK_SIG);
 QActive_subscribe(&amp;me-&gt;super, TOGGLE_SIG);</action>
-     <initial_glyph conn="15,14,5,0,6,5">
+     <initial_glyph conn="15,14,5,0,6,4">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
     <state name="active">
-     <entry>printf(&quot;-&gt;active-entry&quot;);</entry>
-     <initial target="../2">
-      <initial_glyph conn="29,41,5,0,3,3">
+     <entry>QTimeEvt_ctorX(&amp;me-&gt;timeEvt0, &amp;me-&gt;super, TICK_SIG, 0U);
+QTimeEvt_armX(&amp;me-&gt;timeEvt0, 1000U, 1000U);</entry>
+     <initial target="../1">
+      <initial_glyph conn="26,38,5,0,3,5">
        <action box="0,-2,10,2"/>
       </initial_glyph>
      </initial>
-     <tran trig="TICK">
-      <action>// SOMO O TEMPO AQUI, é JUSTO ATUALIZAR TAMBÉM
-printf(&quot;-&gt;tick-evt&quot;);</action>
-      <tran_glyph conn="17,42,5,-1,5">
-       <action box="0,-2,10,2"/>
-      </tran_glyph>
-     </tran>
      <state name="timekeeping">
-      <entry>printf(&quot;-&gt;timekeeping-entry&quot;);</entry>
-      <exit>printf(&quot;-&gt;timekeeping-exit&quot;);</exit>
-      <tran trig="MODE" target="../../3">
-       <tran_glyph conn="44,50,1,3,9">
+      <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timekeeping&quot;);</entry>
+      <tran trig="MODE" target="../../2">
+       <action>bsp_display_clear_ssd1306();</action>
+       <tran_glyph conn="41,49,1,3,6">
         <action box="1,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="28,44,16,12">
+      <tran trig="TICK">
+       <action>// ATUALIZA O TEMPO
+
+char buf[10];
+bsp_datetime_t dt;
+bsp_get_time(&amp;dt);
+
+snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, dt.hour, dt.minute, dt.second);
+bsp_display_write_string_ssd1306(30, 25, buf);</action>
+       <tran_glyph conn="25,50,3,-1,4">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="25,43,16,12">
        <entry box="1,2,6,2"/>
-       <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
      <state name="countdown_FACE">
       <documentation>// SHOWS FACE</documentation>
-      <entry>printf(&quot;-&gt;countdown-entry&quot;);</entry>
-      <exit>printf(&quot;-&gt;countdown-exit&quot;);</exit>
+      <entry brief="countdown face">bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_face&quot;);</entry>
       <tran trig="TOGGLE">
        <action>// STARTA OU PARA O CRONOMETRO</action>
-       <tran_glyph conn="53,61,3,-1,8">
+       <tran_glyph conn="47,60,3,-1,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <tran trig="ENTER" target="../4">
-       <tran_glyph conn="53,42,3,3,6">
+       <tran_glyph conn="47,41,3,3,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="MODE" target="../../5">
-       <tran_glyph conn="83,50,1,3,9">
+      <tran trig="MODE" target="../../4">
+       <action>bsp_display_clear_ssd1306();</action>
+       <tran_glyph conn="77,49,1,3,4">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="TIMEOUT" target="../../2">
-       <tran_glyph conn="68,32,0,0,-4,-30,16">
+      <tran trig="TIMEOUT" target="../../1">
+       <tran_glyph conn="63,31,0,0,-3,-25,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <state name="countdown_config">
        <documentation>// SHOWS CONFIG</documentation>
-       <entry>printf(&quot;-&gt;countdown_config-entry&quot;);
-//blink(me-&gt;time[sel_field])</entry>
-       <exit>printf(&quot;-&gt;countdown_config-exit&quot;);</exit>
+       <entry>//blink(me-&gt;time[sel_field])
+bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_conf&quot;);</entry>
        <tran trig="MODE">
-        <action>// AFIRMA E AVANÇA CAMPO</action>
-        <tran_glyph conn="59,47,3,-1,8">
+        <action>// AFIRMA E AVANÇA CAMPO
+bsp_display_clear_ssd1306();
+bsp_display_write_string_ssd1306(5, 5, &quot;cd_conf-&gt;mode++&quot;);</action>
+        <tran_glyph conn="53,46,3,-1,8">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
@@ -83,136 +102,191 @@ printf(&quot;-&gt;tick-evt&quot;);</action>
         <action>// AUMENTA +1 O VALOR DO CAMPO HORA, MINUTO OU SEGUNDO
 
 // OBS -&gt; DEFINIDO PELA VARIÁVEL DE CONTROLE DE MODE.</action>
-        <tran_glyph conn="59,52,3,-1,8">
+        <tran_glyph conn="53,51,3,-1,8">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="ENTER" target="../..">
-        <tran_glyph conn="59,45,3,3,-8,2,2">
+        <action>bsp_display_clear_ssd1306();
+bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_face&quot;);</action>
+        <tran_glyph conn="53,44,3,3,-8,2,2">
          <action box="-6,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="59,38,18,17">
-        <entry box="1,2,4,12"/>
-        <exit box="1,14,6,2"/>
+       <state_glyph node="53,37,18,17">
+        <entry box="1,2,7,2"/>
        </state_glyph>
       </state>
-      <state_glyph node="53,32,30,31">
-       <entry box="1,2,6,2"/>
-       <exit box="1,4,6,2"/>
+      <state_glyph node="47,31,30,31">
+       <entry box="1,2,15,2"/>
       </state_glyph>
      </state>
      <state name="time_date_FACE">
       <documentation>// SHOWS FACE</documentation>
-      <entry>printf(&quot;-&gt;time_data-entry&quot;);</entry>
-      <exit>printf(&quot;-&gt;time_data-exit&quot;);</exit>
+      <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timedate_face&quot;);</entry>
       <tran trig="ENTER" target="../3">
-       <tran_glyph conn="115,42,3,3,8">
+       <tran_glyph conn="120,41,3,3,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="TIMEOUT" target="../../2">
-       <tran_glyph conn="132,32,0,0,-4,-94,16">
-        <action box="0,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <tran trig="MODE" target="../../6">
-       <tran_glyph conn="131,63,2,0,8">
+      <tran trig="MODE" target="../../5">
+       <action>bsp_display_clear_ssd1306();</action>
+       <tran_glyph conn="136,62,2,0,4">
         <action box="1,1,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="TIMEOUT" target="../../1">
+       <tran_glyph conn="137,31,0,0,-3,-99,15">
+        <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <state name="time_date_config">
        <documentation>// SHOWS CONFIG</documentation>
-       <entry>printf(&quot;-&gt;time_date_config-entry&quot;);</entry>
-       <exit>printf(&quot;-&gt;time_date_config-exit&quot;);</exit>
+       <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;time_date_conf&quot;);
+
+char buf[10];
+bsp_datetime_t dt;
+bsp_get_time(&amp;dt);
+
+me-&gt;hour = dt.hour;
+me-&gt;minute = dt.minute;
+me-&gt;second = dt.second;
+//me-&gt;time_format = dt.time_format;
+me-&gt;curr_mode = 0;
+
+snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, me-&gt;hour, me-&gt;minute, me-&gt;second);
+bsp_display_write_string_ssd1306(30, 28, buf);</entry>
        <tran trig="MODE">
-        <action>// AFIRMA E AVANÇA CAMPO</action>
-        <tran_glyph conn="123,48,3,-1,10">
+        <action>me-&gt;curr_mode = (me-&gt;curr_mode + 1) % 3;</action>
+        <tran_glyph conn="128,47,3,-1,10">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="TOGGLE">
-        <tran_glyph conn="123,53,3,-1,10">
+        <action>switch(me-&gt;curr_mode) {
+    case 0: 
+        me-&gt;hour = (me-&gt;hour &lt; 23) ? me-&gt;hour + 1 : 0; 
+        break;
+    case 1: 
+        me-&gt;minute = (me-&gt;minute &lt; 59) ? me-&gt;minute + 1 : 0; 
+        break;
+    case 2: 
+        me-&gt;second = (me-&gt;second &lt; 59) ? me-&gt;second += 1 : 0;
+    case 3:
+        me-&gt;time_format = !me-&gt;time_format;
+}
+char buf[10];
+//if (me-&gt;time_format == 0) // 12h
+//    snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d 12h&quot;, me-&gt;hour, me-&gt;minute, me-&gt;second);
+//else
+//  snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d 24h&quot;, me-&gt;hour, me-&gt;minute, me-&gt;second);
+snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, me-&gt;hour, me-&gt;minute, me-&gt;second);
+
+bsp_display_write_string_ssd1306(30, 28, buf);</action>
+        <tran_glyph conn="128,52,3,-1,10">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="ENTER" target="../..">
-        <tran_glyph conn="123,46,3,3,-10,1,2">
+        <action>bsp_display_clear_ssd1306();
+bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timedate_face&quot;);
+bsp_datetime_t dt;
+dt.hour = me-&gt;hour;
+dt.minute = me-&gt;minute;
+dt.second = me-&gt;second;
+//dt.time_format = me-&gt;time_format;
+
+bsp_set_time(&amp;dt);</action>
+        <tran_glyph conn="128,45,3,3,-10,1,2">
          <action box="-6,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="123,40,20,17">
+       <state_glyph node="128,39,20,17">
         <entry box="1,2,6,2"/>
-        <exit box="1,4,6,2"/>
        </state_glyph>
       </state>
-      <state_glyph node="115,32,33,31">
+      <state_glyph node="120,31,33,31">
        <entry box="1,2,6,2"/>
-       <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <state name="heart_rate">
-      <entry>printf(&quot;-&gt;heartrate-entry&quot;);</entry>
-      <exit>printf(&quot;-&gt;heartrate-exit&quot;);</exit>
-      <tran trig="MODE" target="../../4">
-       <tran_glyph conn="108,50,1,3,7">
-        <action box="1,-2,10,2"/>
-       </tran_glyph>
-      </tran>
-      <tran trig="TIMEOUT" target="../../2">
-       <tran_glyph conn="101,44,0,0,-16,-63,16">
+     <state name="accel">
+      <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;accel&quot;);</entry>
+      <tran trig="MODE" target="../../3">
+       <action>bsp_display_clear_ssd1306();</action>
+       <tran_glyph conn="115,49,1,3,5">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="92,44,16,12">
+      <tran trig="TIMEOUT" target="../../1">
+       <tran_glyph conn="96,31,0,0,-3,-58,15">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="TICK">
+       <action>bsp_accel_raw_t accel;
+char buf[32];
+if (bsp_accel_get_xyz(&amp;accel) == 0) {
+    snprintf(buf, sizeof(buf), &quot;X:%d Y:%d Z:%d&quot;, accel.x, accel.y, accel.z);
+    bsp_display_write_string_ssd1306(0, 40, buf);
+}
+    snprintf(buf, sizeof(buf), &quot;deu erro&quot;);
+
+bsp_display_write_string_ssd1306(0, 40, buf);</action>
+       <tran_glyph conn="81,43,3,-1,6">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="81,31,34,31">
        <entry box="1,2,6,2"/>
-       <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
      <state name="settings_FACE">
       <documentation>// SHOWS FACE</documentation>
-      <entry>printf(&quot;-&gt;settings-entry&quot;);</entry>
-      <exit>printf(&quot;-&gt;settings-exit&quot;);</exit>
-      <tran trig="ENTER" target="../2">
-       <tran_glyph conn="111,81,3,3,10">
+      <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;settings_face&quot;);</entry>
+      <tran trig="ENTER" target="../3">
+       <tran_glyph conn="120,76,3,3,7">
         <action box="1,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="MODE" target="../../2">
-       <tran_glyph conn="111,90,3,2,-73,-34">
+      <tran trig="MODE" target="../../1">
+       <action>bsp_display_clear_ssd1306();</action>
+       <tran_glyph conn="120,85,3,2,-85,-30">
         <action box="-6,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <tran trig="TIMEOUT" target="../../1">
+       <action>bsp_display_clear_ssd1306();</action>
+       <tran_glyph conn="153,80,1,0,5,-52,-120,15">
+        <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <state name="settings">
        <documentation>// SHOW SETTINGS</documentation>
-       <entry>printf(&quot;-&gt;settings_config-entry&quot;);</entry>
-       <exit>printf(&quot;-&gt;settings_config-exit&quot;);</exit>
+       <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;settings_conf&quot;);</entry>
        <tran trig="ENTER" target="../..">
-        <tran_glyph conn="121,84,3,3,-12,2,2">
+        <tran_glyph conn="127,79,3,3,-9,2,2">
          <action box="-6,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="TOGGLE">
-        <tran_glyph conn="121,90,3,-1,7">
+        <tran_glyph conn="127,85,3,-1,7">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="MODE">
-        <tran_glyph conn="121,86,3,-1,7">
+        <tran_glyph conn="127,81,3,-1,7">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="121,78,19,15">
+       <state_glyph node="127,73,19,15">
         <entry box="1,2,6,2"/>
-        <exit box="1,4,6,2"/>
        </state_glyph>
       </state>
-      <state_glyph node="111,71,38,30">
+      <state_glyph node="120,66,33,30">
        <entry box="1,2,6,2"/>
-       <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <state_glyph node="17,19,141,87">
+     <state_glyph node="17,18,145,85">
       <entry box="1,2,6,2"/>
      </state_glyph>
     </state>
@@ -238,50 +312,79 @@ printf(&quot;-&gt;tick-evt&quot;);</action>
     <state_diagram size="343,261"/>
    </statechart>
   </class>
-  <operation name="Watch_ctor" type="void" visibility="0x00" properties="0x00">
-   <code>Watch *me = &amp;Watch_instance;
-QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;Watch_initial));</code>
+  <class name="HealthMgr" superclass="qpc::QActive">
+   <attribute name="inst" type="HealthMgr" visibility="0x00" properties="0x01"/>
+   <attribute name="accel" type="Accel" visibility="0x02" properties="0x00"/>
+   <statechart properties="0x00">
+    <initial target="../1">
+     <action>QHsm_init((QHsm *)&amp;me-&gt;accel, (QEvt *)0);</action>
+     <initial_glyph conn="30,17,5,0,3,2">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
+    <state name="active">
+     <state_glyph node="24,19,73,57"/>
+    </state>
+    <state_diagram size="123,87"/>
+   </statechart>
+  </class>
+  <class name="Accel" superclass="qpc::QHsm">
+   <attribute name="x" type="" visibility="0x02" properties="0x00"/>
+   <attribute name="y" type="" visibility="0x02" properties="0x00"/>
+   <attribute name="z" type="" visibility="0x02" properties="0x00"/>
+  </class>
+ </package>
+ <package name="App" stereotype="0x00">
+  <operation name="GuiMgr_ctor" type="void" visibility="0x00" properties="0x00">
+   <code>GuiMgr *me = &amp;GuiMgr_inst;
+QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;GuiMgr_initial));</code>
   </operation>
-  <attribute name="AO_Watch" type="QActive* const" visibility="0x00" properties="0x00">
-   <code>= &amp;Watch_instance.super;</code>
+  <attribute name="AppSignals" type="enum" visibility="0x04" properties="0x00">
+   <code>{
+    TICK_SIG = Q_USER_SIG, // time tick event
+    ENTER_SIG,
+    MODE_SIG,
+    BACK_SIG,
+    TOGGLE_SIG,
+    MAX_PUB_SIG,
+
+    TIMEOUT_SIG,
+    MAX_SIG
+};</code>
+  </attribute>
+  <attribute name="AO_GuiMgr" type="QActive* const" visibility="0x00" properties="0x00">
+   <code>= Q_ACTIVE_UPCAST(&amp;GuiMgr_inst);</code>
+  </attribute>
+  <attribute name="AO_HealthMgr" type="QActive* const" visibility="0x00" properties="0x00">
+   <code>= Q_ACTIVE_UPCAST(&amp;HealthMgr_inst);</code>
   </attribute>
  </package>
  <directory name="./watch/src">
-  <file name="HSM.c">
+  <file name="gui.c">
    <text>#include &quot;qpc.h&quot;
 #include &quot;bsp.h&quot;
+#include &quot;app.h&quot;
 
 // DECLARA OS MÉTODOS
-$declare${AOs::Watch}
+$declare${Components::GuiMgr}
 
 // CRIA O OBJETO
-$define${AOs::AO_Watch}
+$define${App::AO_GuiMgr}
 
-$define${AOs::Watch_ctor}
+$define${App::GuiMgr_ctor}
 
 // CRIA OS 
-$define${AOs::Watch}</text>
+$define${Components::GuiMgr}</text>
   </file>
-  <file name="HSM.h"/>
- </directory>
- <directory name="./watch/hsm-pc-simulation">
-  <file name="simu.c">
-   <text>#include &lt;stdio.h&gt;
+  <file name="app.h">
+   <text>#ifndef APP_H_
+#define APP_H_
 
 #include &quot;qpc.h&quot;
-#include &quot;bsp.h&quot;
 
-// DECLARA OS MÉTODOS
-$declare${AOs::Watch}
+$declare ${App}
 
-// CRIA O OBJETO
-$define${AOs::AO_Watch}
-
-$define${AOs::Watch_ctor}
-
-// CRIA OS 
-$define${AOs::Watch}</text>
+#endif // APP_H_</text>
   </file>
-  <file name="simu.h"/>
  </directory>
 </model>
