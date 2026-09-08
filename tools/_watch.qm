@@ -29,15 +29,16 @@ QActive_subscribe(&amp;me-&gt;super, TOGGLE_SIG);</action>
      </initial_glyph>
     </initial>
     <state name="active">
-     <entry>QTimeEvt_ctorX(&amp;me-&gt;timeEvt0, &amp;me-&gt;super, TICK_SIG, 0U);
-QTimeEvt_armX(&amp;me-&gt;timeEvt0, 1000U, 1000U);</entry>
+     <entry>QTimeEvt_ctorX(&amp;me-&gt;timeEvt0, &amp;me-&gt;super, TICK_SIG, 0U);</entry>
      <initial target="../1">
       <initial_glyph conn="26,38,5,0,3,5">
        <action box="0,-2,10,2"/>
       </initial_glyph>
      </initial>
      <state name="timekeeping">
-      <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timekeeping&quot;);</entry>
+      <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt0); 
+QTimeEvt_armX(&amp;me-&gt;timeEvt0, 1000U, 1000U);
+bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timekeeping&quot;);</entry>
       <tran trig="MODE" target="../../2">
        <action>bsp_display_clear_ssd1306();</action>
        <tran_glyph conn="41,49,1,3,6">
@@ -77,7 +78,7 @@ bsp_display_write_string_ssd1306(30, 25, buf);</action>
       </tran>
       <tran trig="MODE" target="../../4">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="77,49,1,3,4">
+       <tran_glyph conn="77,49,1,3,3">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -210,15 +211,17 @@ bsp_set_time(&amp;dt);</action>
       </state_glyph>
      </state>
      <state name="accel">
-      <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;accel&quot;);</entry>
+      <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt0); 
+QTimeEvt_armX(&amp;me-&gt;timeEvt0, 50U, 100U);
+bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;accel&quot;);</entry>
       <tran trig="MODE" target="../../3">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="115,49,1,3,5">
+       <tran_glyph conn="114,49,1,3,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <tran trig="TIMEOUT" target="../../1">
-       <tran_glyph conn="96,31,0,0,-3,-58,15">
+       <tran_glyph conn="95,31,0,0,-3,-57,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -227,16 +230,17 @@ bsp_set_time(&amp;dt);</action>
 char buf[32];
 if (bsp_accel_get_xyz(&amp;accel) == 0) {
     snprintf(buf, sizeof(buf), &quot;X:%d Y:%d Z:%d&quot;, accel.x, accel.y, accel.z);
+//    snprintf(buf, sizeof(buf), &quot;Z:%d&quot;, accel.z);
     bsp_display_write_string_ssd1306(0, 40, buf);
 }
-    snprintf(buf, sizeof(buf), &quot;deu erro&quot;);
+//snprintf(buf, sizeof(buf), &quot;deu erro&quot;);
 
 bsp_display_write_string_ssd1306(0, 40, buf);</action>
-       <tran_glyph conn="81,43,3,-1,6">
+       <tran_glyph conn="80,43,3,-1,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="81,31,34,31">
+      <state_glyph node="80,31,34,31">
        <entry box="1,2,6,2"/>
       </state_glyph>
      </state>

@@ -130,7 +130,6 @@ static QState GuiMgr_active(GuiMgr * const me, QEvt const * const e) {
         //${Components::GuiMgr::SM::active}
         case Q_ENTRY_SIG: {
             QTimeEvt_ctorX(&me->timeEvt0, &me->super, TICK_SIG, 0U);
-            QTimeEvt_armX(&me->timeEvt0, 1000U, 1000U);
             status_ = Q_HANDLED();
             break;
         }
@@ -153,6 +152,8 @@ static QState GuiMgr_timekeeping(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::active::timekeeping}
         case Q_ENTRY_SIG: {
+            QTimeEvt_disarm(&me->timeEvt0);
+            QTimeEvt_armX(&me->timeEvt0, 1000U, 1000U);
             bsp_display_write_string_ssd1306(0, 5, "entry->timekeeping");
             status_ = Q_HANDLED();
             break;
@@ -382,6 +383,8 @@ static QState GuiMgr_accel(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::active::accel}
         case Q_ENTRY_SIG: {
+            QTimeEvt_disarm(&me->timeEvt0);
+            QTimeEvt_armX(&me->timeEvt0, 50U, 100U);
             bsp_display_write_string_ssd1306(0, 5, "entry->accel");
             status_ = Q_HANDLED();
             break;
@@ -403,9 +406,10 @@ static QState GuiMgr_accel(GuiMgr * const me, QEvt const * const e) {
             char buf[32];
             if (bsp_accel_get_xyz(&accel) == 0) {
                 snprintf(buf, sizeof(buf), "X:%d Y:%d Z:%d", accel.x, accel.y, accel.z);
+            //    snprintf(buf, sizeof(buf), "Z:%d", accel.z);
                 bsp_display_write_string_ssd1306(0, 40, buf);
             }
-                snprintf(buf, sizeof(buf), "deu erro");
+            //snprintf(buf, sizeof(buf), "deu erro");
 
             bsp_display_write_string_ssd1306(0, 40, buf);
             status_ = Q_HANDLED();
