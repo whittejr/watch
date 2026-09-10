@@ -10,6 +10,7 @@
    <attribute name="second" type="uint8_t" visibility="0x02" properties="0x00"/>
    <attribute name="curr_mode" type="uint8_t" visibility="0x02" properties="0x00"/>
    <attribute name="time_format" type="uint8_t" visibility="0x00" properties="0x00"/>
+   <attribute name="history_active" type="QStateHandler" visibility="0x02" properties="0x00"/>
    <statechart properties="0x00">
     <documentation>char buf[10];
 bsp_datetime_t dt;
@@ -23,25 +24,34 @@ bsp_display_write_string_ssd1306(30, 30, buf);</documentation>
 QActive_subscribe(&amp;me-&gt;super, ENTER_SIG);
 QActive_subscribe(&amp;me-&gt;super, MODE_SIG);
 QActive_subscribe(&amp;me-&gt;super, BACK_SIG);
-QActive_subscribe(&amp;me-&gt;super, TOGGLE_SIG);</action>
-     <initial_glyph conn="15,14,5,0,6,4">
+QActive_subscribe(&amp;me-&gt;super, TOGGLE_SIG);
+QActive_subscribe(&amp;me-&gt;super, MEDICINE_ALARM_SIG);</action>
+     <initial_glyph conn="59,54,5,0,9,11">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
     <state name="active">
      <entry>QTimeEvt_ctorX(&amp;me-&gt;timeEvt0, &amp;me-&gt;super, TICK_SIG, 0U);</entry>
-     <initial target="../1">
-      <initial_glyph conn="26,38,5,0,3,5">
+     <initial target="../3">
+      <initial_glyph conn="69,85,5,0,3,5">
        <action box="0,-2,10,2"/>
       </initial_glyph>
      </initial>
+     <history type="deep" target="../3">
+      <history_glyph conn="64,107,3,2,8,-5"/>
+     </history>
+     <tran trig="MEDICINE_ALARM" target="../../2">
+      <tran_glyph conn="64,119,3,1,-9">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
      <state name="timekeeping">
       <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt0); 
 QTimeEvt_armX(&amp;me-&gt;timeEvt0, 1000U, 1000U);
 bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timekeeping&quot;);</entry>
-      <tran trig="MODE" target="../../2">
+      <tran trig="MODE" target="../../4">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="41,49,1,3,6">
+       <tran_glyph conn="84,96,1,3,6">
         <action box="1,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -54,11 +64,11 @@ bsp_get_time(&amp;dt);
 
 snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, dt.hour, dt.minute, dt.second);
 bsp_display_write_string_ssd1306(30, 25, buf);</action>
-       <tran_glyph conn="25,50,3,-1,4">
+       <tran_glyph conn="68,97,3,-1,4">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="25,43,16,12">
+      <state_glyph node="68,90,16,12">
        <entry box="1,2,6,2"/>
       </state_glyph>
      </state>
@@ -67,23 +77,23 @@ bsp_display_write_string_ssd1306(30, 25, buf);</action>
       <entry brief="countdown face">bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_face&quot;);</entry>
       <tran trig="TOGGLE">
        <action>// STARTA OU PARA O CRONOMETRO</action>
-       <tran_glyph conn="47,60,3,-1,8">
+       <tran_glyph conn="90,107,3,-1,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <tran trig="ENTER" target="../4">
-       <tran_glyph conn="47,41,3,3,6">
+       <tran_glyph conn="90,88,3,3,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="MODE" target="../../4">
+      <tran trig="MODE" target="../../6">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="77,49,1,3,3">
+       <tran_glyph conn="120,96,1,3,3">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="TIMEOUT" target="../../1">
-       <tran_glyph conn="63,31,0,0,-3,-25,15">
+      <tran trig="TIMEOUT" target="../../3">
+       <tran_glyph conn="106,78,0,0,-3,-25,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -95,7 +105,7 @@ bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_conf&quot;);</e
         <action>// AFIRMA E AVANÇA CAMPO
 bsp_display_clear_ssd1306();
 bsp_display_write_string_ssd1306(5, 5, &quot;cd_conf-&gt;mode++&quot;);</action>
-        <tran_glyph conn="53,46,3,-1,8">
+        <tran_glyph conn="96,93,3,-1,8">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
@@ -103,22 +113,22 @@ bsp_display_write_string_ssd1306(5, 5, &quot;cd_conf-&gt;mode++&quot;);</action>
         <action>// AUMENTA +1 O VALOR DO CAMPO HORA, MINUTO OU SEGUNDO
 
 // OBS -&gt; DEFINIDO PELA VARIÁVEL DE CONTROLE DE MODE.</action>
-        <tran_glyph conn="53,51,3,-1,8">
+        <tran_glyph conn="96,98,3,-1,8">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="ENTER" target="../..">
         <action>bsp_display_clear_ssd1306();
 bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_face&quot;);</action>
-        <tran_glyph conn="53,44,3,3,-8,2,2">
+        <tran_glyph conn="96,91,3,3,-8,2,2">
          <action box="-6,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="53,37,18,17">
+       <state_glyph node="96,84,18,17">
         <entry box="1,2,7,2"/>
        </state_glyph>
       </state>
-      <state_glyph node="47,31,30,31">
+      <state_glyph node="90,78,30,31">
        <entry box="1,2,15,2"/>
       </state_glyph>
      </state>
@@ -126,18 +136,18 @@ bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_face&quot;);</a
       <documentation>// SHOWS FACE</documentation>
       <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timedate_face&quot;);</entry>
       <tran trig="ENTER" target="../3">
-       <tran_glyph conn="120,41,3,3,8">
+       <tran_glyph conn="163,88,3,3,8">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="MODE" target="../../5">
+      <tran trig="MODE" target="../../7">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="136,62,2,0,4">
+       <tran_glyph conn="179,109,2,0,4">
         <action box="1,1,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="TIMEOUT" target="../../1">
-       <tran_glyph conn="137,31,0,0,-3,-99,15">
+      <tran trig="TIMEOUT" target="../../3">
+       <tran_glyph conn="180,78,0,0,-3,-99,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -159,7 +169,7 @@ snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, me-&gt;hour, me-&gt;minut
 bsp_display_write_string_ssd1306(30, 28, buf);</entry>
        <tran trig="MODE">
         <action>me-&gt;curr_mode = (me-&gt;curr_mode + 1) % 3;</action>
-        <tran_glyph conn="128,47,3,-1,10">
+        <tran_glyph conn="171,94,3,-1,10">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
@@ -184,7 +194,7 @@ char buf[10];
 snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, me-&gt;hour, me-&gt;minute, me-&gt;second);
 
 bsp_display_write_string_ssd1306(30, 28, buf);</action>
-        <tran_glyph conn="128,52,3,-1,10">
+        <tran_glyph conn="171,99,3,-1,10">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
@@ -198,15 +208,15 @@ dt.second = me-&gt;second;
 //dt.time_format = me-&gt;time_format;
 
 bsp_set_time(&amp;dt);</action>
-        <tran_glyph conn="128,45,3,3,-10,1,2">
+        <tran_glyph conn="171,92,3,3,-10,1,2">
          <action box="-6,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="128,39,20,17">
+       <state_glyph node="171,86,20,17">
         <entry box="1,2,6,2"/>
        </state_glyph>
       </state>
-      <state_glyph node="120,31,33,31">
+      <state_glyph node="163,78,33,31">
        <entry box="1,2,6,2"/>
       </state_glyph>
      </state>
@@ -214,14 +224,14 @@ bsp_set_time(&amp;dt);</action>
       <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt0); 
 QTimeEvt_armX(&amp;me-&gt;timeEvt0, 50U, 100U);
 bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;accel&quot;);</entry>
-      <tran trig="MODE" target="../../3">
+      <tran trig="MODE" target="../../5">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="114,49,1,3,6">
+       <tran_glyph conn="157,96,1,3,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="TIMEOUT" target="../../1">
-       <tran_glyph conn="95,31,0,0,-3,-57,15">
+      <tran trig="TIMEOUT" target="../../3">
+       <tran_glyph conn="138,78,0,0,-3,-57,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -236,11 +246,11 @@ if (bsp_accel_get_xyz(&amp;accel) == 0) {
 //snprintf(buf, sizeof(buf), &quot;deu erro&quot;);
 
 bsp_display_write_string_ssd1306(0, 40, buf);</action>
-       <tran_glyph conn="80,43,3,-1,6">
+       <tran_glyph conn="123,90,3,-1,6">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="80,31,34,31">
+      <state_glyph node="123,78,34,31">
        <entry box="1,2,6,2"/>
       </state_glyph>
      </state>
@@ -248,19 +258,19 @@ bsp_display_write_string_ssd1306(0, 40, buf);</action>
       <documentation>// SHOWS FACE</documentation>
       <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;settings_face&quot;);</entry>
       <tran trig="ENTER" target="../3">
-       <tran_glyph conn="120,76,3,3,7">
+       <tran_glyph conn="163,123,3,3,7">
         <action box="1,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="MODE" target="../../1">
+      <tran trig="MODE" target="../../3">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="120,85,3,2,-85,-30">
+       <tran_glyph conn="163,132,3,2,-85,-30">
         <action box="-6,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <tran trig="TIMEOUT" target="../../1">
+      <tran trig="TIMEOUT" target="../../3">
        <action>bsp_display_clear_ssd1306();</action>
-       <tran_glyph conn="153,80,1,0,5,-52,-120,15">
+       <tran_glyph conn="196,127,1,0,5,-52,-120,15">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
@@ -268,48 +278,44 @@ bsp_display_write_string_ssd1306(0, 40, buf);</action>
        <documentation>// SHOW SETTINGS</documentation>
        <entry>bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;settings_conf&quot;);</entry>
        <tran trig="ENTER" target="../..">
-        <tran_glyph conn="127,79,3,3,-9,2,2">
+        <tran_glyph conn="170,126,3,3,-9,2,2">
          <action box="-6,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="TOGGLE">
-        <tran_glyph conn="127,85,3,-1,7">
+        <tran_glyph conn="170,132,3,-1,7">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
        <tran trig="MODE">
-        <tran_glyph conn="127,81,3,-1,7">
+        <tran_glyph conn="170,128,3,-1,7">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="127,73,19,15">
+       <state_glyph node="170,120,19,15">
         <entry box="1,2,6,2"/>
        </state_glyph>
       </state>
-      <state_glyph node="120,66,33,30">
+      <state_glyph node="163,113,33,30">
        <entry box="1,2,6,2"/>
       </state_glyph>
      </state>
-     <state_glyph node="17,18,145,85">
+     <state_glyph node="64,65,141,80">
       <entry box="1,2,6,2"/>
      </state_glyph>
     </state>
-    <state name="HR_FACE">
-     <entry>//entry_face(HR_FACE);</entry>
-     <tran trig="ENTER" target="../2">
-      <tran_glyph conn="168,101,3,3,15">
+    <state name="medicine_popup">
+     <entry>bsp_display_clear_ssd1306();
+bsp_display_write_string_ssd1306(0, 10, &quot;TOMAR REMEDIO!&quot;);
+bsp_display_write_string_ssd1306(0, 30, &quot;ENTER:OK  MODE:SONECA&quot;);</entry>
+     <tran trig="ENTER, MODE" target="../../1" cpref="../../1/1">
+      <action>static const QEvt dismissEvt = { DISMISS_SIG, 0U, 0U };
+QF_PUBLISH(&amp;dismissEvt, me);</action>
+      <tran_glyph conn="55,112,1,3,6,-5,2">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <tran trig="TIMEOUT">
-      <tran_glyph conn="168,121,3,-1,8">
-       <action box="0,-2,10,2"/>
-      </tran_glyph>
-     </tran>
-     <state name="HR_measuring">
-      <state_glyph node="183,94,32,19"/>
-     </state>
-     <state_glyph node="168,76,60,55">
+     <state_glyph node="28,108,27,23">
       <entry box="1,2,6,2"/>
      </state_glyph>
     </state>
@@ -337,6 +343,139 @@ bsp_display_write_string_ssd1306(0, 40, buf);</action>
    <attribute name="y" type="" visibility="0x02" properties="0x00"/>
    <attribute name="z" type="" visibility="0x02" properties="0x00"/>
   </class>
+  <class name="NotificationMgr" superclass="qpc::QActive">
+   <attribute name="inst" type="NotificationMgr" visibility="0x00" properties="0x01"/>
+   <attribute name="alertTimer" type="QTimeEvt" visibility="0x02" properties="0x00"/>
+   <statechart properties="0x00">
+    <initial target="../1">
+     <action>QActive_subscribe(&amp;me-&gt;super, MEDICINE_ALARM_SIG);
+QActive_subscribe(&amp;me-&gt;super, SNOOZE_SIG);
+QActive_subscribe(&amp;me-&gt;super, DISMISS_SIG);</action>
+     <initial_glyph conn="12,23,5,0,8,6">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
+    <state name="idle">
+     <tran trig="MEDICINE_ALARM" target="../../2">
+      <tran_glyph conn="32,36,1,3,10">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="14,29,18,14"/>
+    </state>
+    <state name="alerting">
+     <entry>QTimeEvt_armX(&amp;me-&gt;alertTimer, 10000U, 0U);</entry>
+     <exit>QTimeEvt_disarm(&amp;me-&gt;alertTimer);</exit>
+     <tran trig="DISMISS, ALARM_TIMEOUT" target="../../1">
+      <tran_glyph conn="51,43,2,2,3,-29,-3">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="42,29,18,14">
+      <entry box="1,2,6,2"/>
+      <exit box="1,4,6,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="106,82"/>
+   </statechart>
+  </class>
+  <class name="AlarmMgr" superclass="qpc::QActive">
+   <attribute name="alarms[MAX_ALARMS]" type="Alarm" visibility="0x02" properties="0x00"/>
+   <attribute name="inst" type="AlarmMgr" visibility="0x00" properties="0x01"/>
+   <operation name="reschedule" type="void" visibility="0x00" properties="0x00">
+    <code>bsp_datetime_t now;
+bsp_get_time(&amp;now);
+
+uint32_t now_mins = (uint32_t)now.hour * 60 + now.minute;
+uint8_t current_wday = 7;
+
+uint32_t shortest_diff = UINT32_MAX;
+Alarm const *next_alarm = NULL;
+
+for (int i = 0; i &lt; MAX_ALARMS; ++i) {
+    if (!me-&gt;alarms[i].enabled) {
+        continue;
+    }
+
+    uint32_t alarm_mins = (uint32_t)me-&gt;alarms[i].hour * 60 + me-&gt;alarms[i].minute;
+
+    for (uint8_t day_offset = 0; day_offset &lt; 7; ++day_offset) {
+        uint8_t target_wday = (current_wday + day_offset) % 7;
+
+        if (me-&gt;alarms[i].weekday_mask &amp; (1U &lt;&lt; target_wday)) {
+            uint32_t diff_mins;
+
+            if (day_offset == 0) {
+                if (alarm_mins &gt; now_mins) {
+                    diff_mins = alarm_mins - now_mins;
+                } else {
+                    continue;
+                }
+            } else {
+                diff_mins = (day_offset * 1440U + alarm_mins) - now_mins;
+            }
+
+            if (diff_mins &lt; shortest_diff) {
+                shortest_diff = diff_mins;
+                next_alarm = &amp;me-&gt;alarms[i];
+            }
+            break;
+        }
+    }
+}
+
+if (next_alarm != NULL) {
+    rtc_set_alarm(next_alarm-&gt;hour, next_alarm-&gt;minute, 0);
+} else {
+    rtc_cancel_alarm();
+}</code>
+   </operation>
+   <statechart properties="0x00">
+    <initial target="../1">
+     <action>(void)par;
+QActive_subscribe(&amp;me-&gt;super, ADD_ALARM_SIG);
+QActive_subscribe(&amp;me-&gt;super, REMOVE_ALARM_SIG);
+QActive_subscribe(&amp;me-&gt;super, TOGGLE_ALARM_SIG);
+QActive_subscribe(&amp;me-&gt;super, TIME_CHANGED_SIG);</action>
+     <initial_glyph conn="6,5,5,0,8,4">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
+    <state name="active">
+     <entry>AlarmMgr_reschedule(me);</entry>
+     <tran trig="RTC_ALARM">
+      <action>bsp_datetime_t now;
+bsp_get_time(&amp;now);
+
+// Avisa quem precisa saber (GuiMgr e NotificationMgr)
+for (int i = 0; i &lt; MAX_ALARMS; ++i) {
+    if (me-&gt;alarms[i].enabled &amp;&amp;
+        me-&gt;alarms[i].hour == now.hour &amp;&amp;
+        me-&gt;alarms[i].minute == now.minute) {
+
+        MedicineAlarmEvt *evt = Q_NEW(MedicineAlarmEvt, MEDICINE_ALARM_SIG);
+        evt-&gt;medicine_id = me-&gt;alarms[i].medicine_id;
+        QF_PUBLISH(&amp;evt-&gt;super, me);
+    }
+}
+AlarmMgr_reschedule(me);</action>
+      <tran_glyph conn="5,27,3,-1,11">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="ADD_ALARM, REMOVE_ALARM, TOGGLE_ALARM, TIME_CHANGED">
+      <action>AlarmMgr_reschedule(me);</action>
+      <tran_glyph conn="5,37,3,-1,11">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="5,9,78,52">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="87,66"/>
+   </statechart>
+  </class>
  </package>
  <package name="App" stereotype="0x00">
   <operation name="GuiMgr_ctor" type="void" visibility="0x00" properties="0x00">
@@ -350,8 +489,22 @@ QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;GuiMgr_initial));</code>
     MODE_SIG,
     BACK_SIG,
     TOGGLE_SIG,
+
+    RTC_ALARM_SIG,
+    ADD_ALARM_SIG,
+    REMOVE_ALARM_SIG,
+    TOGGLE_ALARM_SIG,
+    TIME_CHANGED_SIG,
+    MEDICINE_ALARM_SIG,
+
+    SNOOZE_SIG,
+    DISMISS_SIG,
+    
+
     MAX_PUB_SIG,
 
+    ALARM_TIMEOUT_SIG,
+    SNOOZE_TIMEOUT_SIG,
     TIMEOUT_SIG,
     MAX_SIG
 };</code>
@@ -362,6 +515,44 @@ QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;GuiMgr_initial));</code>
   <attribute name="AO_HealthMgr" type="QActive* const" visibility="0x00" properties="0x00">
    <code>= Q_ACTIVE_UPCAST(&amp;HealthMgr_inst);</code>
   </attribute>
+  <operation name="AlarmMgr_ctor" type="void" visibility="0x00" properties="0x00">
+   <code>AlarmMgr *me = &amp;AlarmMgr_inst;
+QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;AlarmMgr_initial));
+
+ for (int i = 0; i &lt; MAX_ALARMS; ++i) {
+    me-&gt;alarms[i].enabled = false;
+}
+
+// 2. Cria alarmes de teste (ex: às 08:00 e 12:00 todos os dias)
+me-&gt;alarms[0].id = 1;
+me-&gt;alarms[0].hour = 12;
+me-&gt;alarms[0].minute = 1;
+me-&gt;alarms[0].weekday_mask = 0x7F; // 0x7F = todos os 7 dias
+me-&gt;alarms[0].medicine_id = 101;
+me-&gt;alarms[0].enabled = true;
+
+me-&gt;alarms[1].id = 2;
+me-&gt;alarms[1].hour = 12;
+me-&gt;alarms[1].minute = 0;
+me-&gt;alarms[1].weekday_mask = 0x7F;
+me-&gt;alarms[1].medicine_id = 102;
+me-&gt;alarms[1].enabled = true;
+
+
+</code>
+  </operation>
+  <attribute name="AO_AlarmMgr" type="QActive* const" visibility="0x00" properties="0x00">
+   <code>= Q_ACTIVE_UPCAST(&amp;AlarmMgr_inst);</code>
+  </attribute>
+  <attribute name="AO_NotificationMgr" type="QActive* const" visibility="0x00" properties="0x00">
+   <code>= Q_ACTIVE_UPCAST(&amp;NotificationMgr_inst);</code>
+  </attribute>
+  <operation name="NotificationMgr_ctor" type="void" visibility="0x00" properties="0x00">
+   <code>NotificationMgr *me = &amp;NotificationMgr_inst;
+QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;NotificationMgr_initial));
+
+QTimeEvt_ctorX(&amp;me-&gt;alertTimer, &amp;me-&gt;super, ALARM_TIMEOUT_SIG, 0U);</code>
+  </operation>
  </package>
  <directory name="./watch/src">
   <file name="gui.c">
@@ -386,9 +577,58 @@ $define${Components::GuiMgr}</text>
 
 #include &quot;qpc.h&quot;
 
+#define MAX_ALARMS 16
+
+typedef struct {
+    uint8_t id;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t weekday_mask;
+    bool    enabled;
+    uint8_t medicine_id;
+} Alarm;
+
+typedef struct {
+    QEvt super;
+    uint8_t medicine_id;
+} MedicineAlarmEvt;
+
 $declare ${App}
 
 #endif // APP_H_</text>
+  </file>
+  <file name="alarm.c">
+   <text>#include &quot;qpc.h&quot;
+#include &quot;bsp.h&quot;
+#include &quot;app.h&quot;
+#include &quot;rtc.h&quot;
+
+// DECLARA OS MÉTODOS
+$declare${Components::AlarmMgr}
+
+// CRIA O OBJETO
+$define${App::AO_AlarmMgr}
+
+$define${App::AlarmMgr_ctor}
+
+// CRIA OS
+$define${Components::AlarmMgr}</text>
+  </file>
+  <file name="notification.c">
+   <text>#include &quot;qpc.h&quot;
+#include &quot;bsp.h&quot;
+#include &quot;app.h&quot;
+
+// DECLARA OS MÉTODOS
+$declare${Components::NotificationMgr}
+
+// CRIA O OBJETO
+$define${App::AO_NotificationMgr}
+
+$define${App::NotificationMgr_ctor}
+
+// CRIA OS 
+$define${Components::NotificationMgr}</text>
   </file>
  </directory>
 </model>

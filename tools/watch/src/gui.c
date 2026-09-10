@@ -59,6 +59,12 @@ typedef struct GuiMgr {
 
 // public:
     uint8_t time_format;
+
+// private:
+    QStateHandler history_active;
+
+// private state histories
+    QStateHandler hist_active;
 } GuiMgr;
 
 extern GuiMgr GuiMgr_inst;
@@ -80,8 +86,7 @@ static QState GuiMgr_accel(GuiMgr * const me, QEvt const * const e);
 static QState GuiMgr_settings_FACE(GuiMgr * const me, QEvt const * const e);
 // SHOW SETTINGS
 static QState GuiMgr_settings(GuiMgr * const me, QEvt const * const e);
-static QState GuiMgr_HR_FACE(GuiMgr * const me, QEvt const * const e);
-static QState GuiMgr_HR_measuring(GuiMgr * const me, QEvt const * const e);
+static QState GuiMgr_medicine_popup(GuiMgr * const me, QEvt const * const e);
 //$enddecl${Components::GuiMgr} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 // CRIA O OBJETO
@@ -120,6 +125,9 @@ static QState GuiMgr_initial(GuiMgr * const me, void const * const par) {
     QActive_subscribe(&me->super, MODE_SIG);
     QActive_subscribe(&me->super, BACK_SIG);
     QActive_subscribe(&me->super, TOGGLE_SIG);
+    QActive_subscribe(&me->super, MEDICINE_ALARM_SIG);
+    // state history attributes
+    me->hist_active = Q_STATE_CAST(&GuiMgr_timekeeping);
     return Q_TRAN(&GuiMgr_active);
 }
 
@@ -133,9 +141,21 @@ static QState GuiMgr_active(GuiMgr * const me, QEvt const * const e) {
             status_ = Q_HANDLED();
             break;
         }
+        //${Components::GuiMgr::SM::active}
+        case Q_EXIT_SIG: {
+            // save deep history
+            me->hist_active = QHsm_state(Q_HSM_UPCAST(me));
+            status_ = Q_HANDLED();
+            break;
+        }
         //${Components::GuiMgr::SM::active::initial}
         case Q_INIT_SIG: {
             status_ = Q_TRAN(&GuiMgr_timekeeping);
+            break;
+        }
+        //${Components::GuiMgr::SM::active::MEDICINE_ALARM}
+        case MEDICINE_ALARM_SIG: {
+            status_ = Q_TRAN(&GuiMgr_medicine_popup);
             break;
         }
         default: {
@@ -491,40 +511,28 @@ static QState GuiMgr_settings(GuiMgr * const me, QEvt const * const e) {
     return status_;
 }
 
-//${Components::GuiMgr::SM::HR_FACE} .........................................
-static QState GuiMgr_HR_FACE(GuiMgr * const me, QEvt const * const e) {
+//${Components::GuiMgr::SM::medicine_popup} ..................................
+static QState GuiMgr_medicine_popup(GuiMgr * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${Components::GuiMgr::SM::HR_FACE}
+        //${Components::GuiMgr::SM::medicine_popup}
         case Q_ENTRY_SIG: {
-            //entry_face(HR_FACE);
+            bsp_display_clear_ssd1306();
+            bsp_display_write_string_ssd1306(0, 10, "TOMAR REMEDIO!");
+            bsp_display_write_string_ssd1306(0, 30, "ENTER:OK  MODE:SONECA");
             status_ = Q_HANDLED();
             break;
         }
-        //${Components::GuiMgr::SM::HR_FACE::ENTER}
-        case ENTER_SIG: {
-            status_ = Q_TRAN(&GuiMgr_HR_measuring);
-            break;
-        }
-        //${Components::GuiMgr::SM::HR_FACE::TIMEOUT}
-        case TIMEOUT_SIG: {
-            status_ = Q_HANDLED();
+        //${Components::GuiMgr::SM::medicine_popup::ENTER, MODE}
+        case ENTER_SIG: // intentionally fall through
+        case MODE_SIG: {
+            static const QEvt dismissEvt = { DISMISS_SIG, 0U, 0U };
+            QF_PUBLISH(&dismissEvt, me);
+            status_ = Q_TRAN_HIST(me->hist_active);
             break;
         }
         default: {
             status_ = Q_SUPER(&QHsm_top);
-            break;
-        }
-    }
-    return status_;
-}
-
-//${Components::GuiMgr::SM::HR_FACE::HR_measuring} ...........................
-static QState GuiMgr_HR_measuring(GuiMgr * const me, QEvt const * const e) {
-    QState status_;
-    switch (e->sig) {
-        default: {
-            status_ = Q_SUPER(&GuiMgr_HR_FACE);
             break;
         }
     }

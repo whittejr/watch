@@ -12,6 +12,7 @@
 #include "it.h"
 #include "qp.h"
 #include "stm32wbxx_hal.h"
+#include "rtc.h"
 
 extern UART_HandleTypeDef uart1;
 
@@ -23,4 +24,8 @@ void SysTick_Handler(void) {
 
 void USART1_IRQHandler(void) {
     HAL_UART_IRQHandler(&uart1);
+}
+
+void RTC_Alarm_IRQHandler(void) {
+        HAL_RTC_AlarmIRQHandler(&hrtc);
 }

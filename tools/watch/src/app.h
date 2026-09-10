@@ -39,6 +39,22 @@
 
 #include "qpc.h"
 
+#define MAX_ALARMS 16
+
+typedef struct {
+    uint8_t id;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t weekday_mask;
+    bool    enabled;
+    uint8_t medicine_id;
+} Alarm;
+
+typedef struct {
+    QEvt super;
+    uint8_t medicine_id;
+} MedicineAlarmEvt;
+
 //$declare${App} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 //${App::GuiMgr_ctor} ........................................................
@@ -51,8 +67,22 @@ enum AppSignals {
     MODE_SIG,
     BACK_SIG,
     TOGGLE_SIG,
+
+    RTC_ALARM_SIG,
+    ADD_ALARM_SIG,
+    REMOVE_ALARM_SIG,
+    TOGGLE_ALARM_SIG,
+    TIME_CHANGED_SIG,
+    MEDICINE_ALARM_SIG,
+
+    SNOOZE_SIG,
+    DISMISS_SIG,
+
+
     MAX_PUB_SIG,
 
+    ALARM_TIMEOUT_SIG,
+    SNOOZE_TIMEOUT_SIG,
     TIMEOUT_SIG,
     MAX_SIG
 };
@@ -62,6 +92,18 @@ extern QActive* const AO_GuiMgr;
 
 //${App::AO_HealthMgr} .......................................................
 extern QActive* const AO_HealthMgr;
+
+//${App::AlarmMgr_ctor} ......................................................
+void AlarmMgr_ctor(void);
+
+//${App::AO_AlarmMgr} ........................................................
+extern QActive* const AO_AlarmMgr;
+
+//${App::AO_NotificationMgr} .................................................
+extern QActive* const AO_NotificationMgr;
+
+//${App::NotificationMgr_ctor} ...............................................
+void NotificationMgr_ctor(void);
 //$enddecl${App} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 #endif // APP_H_

@@ -20,6 +20,7 @@ set(HAL_SOURCES
     "${THIRD_PARTY}/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_i2c.c"
     "${THIRD_PARTY}/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_i2c_ex.c"
     "${THIRD_PARTY}/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_rtc.c"
+    "${THIRD_PARTY}/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_rtc_ex.c"
     "${THIRD_PARTY}/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_uart.c"
     "${THIRD_PARTY}/STM32WBxx_HAL_Driver/Src/stm32wbxx_hal_uart_ex.c"
     

@@ -23,6 +23,9 @@
 
 #define GUIMGR_QUEUE_LEN 16U
 static QEvt const *guimgr_queue[GUIMGR_QUEUE_LEN];
+static QEvt const *alarmmgr_queue[16];
+static QEvt const *notifmgr_queue[8];
+static MedicineAlarmEvt event_pool[10];
 
 static adxl362_handle_t adxl_handle;
 
@@ -41,17 +44,22 @@ void bsp_init(void) {
     static QSubscrList subscrSto[MAX_PUB_SIG];
     QActive_psInit(subscrSto, Q_DIM(subscrSto));
 
+    QF_poolInit(
+        event_pool,
+        sizeof(event_pool),
+        sizeof(event_pool[0])
+    );
+
     // instantiate and start AOs...
     GuiMgr_ctor();
-    QActive_start(
-        AO_GuiMgr,
-        1U,                         // prioridade
-        guimgr_queue,
-        Q_DIM(guimgr_queue),
-        NULL,
-        0U,
-        NULL
-    );
+    QActive_start(AO_GuiMgr, 1U, guimgr_queue, Q_DIM(guimgr_queue), NULL, 0U, NULL);
+
+    AlarmMgr_ctor();
+    QActive_start(AO_AlarmMgr, 2U, alarmmgr_queue, Q_DIM(alarmmgr_queue), NULL, 0U, NULL);
+
+    NotificationMgr_ctor();
+    QActive_start(AO_NotificationMgr, 3U, notifmgr_queue, Q_DIM(notifmgr_queue), NULL, 0U, NULL);
+
 }
 
 // ACELEROMETRO
