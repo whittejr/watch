@@ -9,6 +9,7 @@ set(EXECUTABLE "firmware")
 
 set(THIRD_PARTY_QP "${CMAKE_CURRENT_SOURCE_DIR}/lib/third_party")
 set(AO_APP_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/tools/watch/src")
+set(THIRD_PARTY_LVGL "${CMAKE_CURRENT_SOURCE_DIR}/lib/third_party/lvgl")
 
 if(NOT DEFINED MCU_FAMILY)
     message(FATAL_ERROR "MCU_FAMILY não definida!")
@@ -23,6 +24,13 @@ endif()
 if("${HAL_SOURCES}" STREQUAL "")
     message(FATAL_ERROR "ERRO: A variável HAL_SOURCES está vazia! A HAL não será compilada.")
 endif()
+
+file(GLOB_RECURSE LVGL_SOURCES CONFIGURE_DEPENDS
+    "${THIRD_PARTY_LVGL}/src/*.c"
+)
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/drivers")
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/debugging/test")
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/libs")
 
 file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
     "core/src/*.c"
@@ -42,19 +50,36 @@ file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS
     "${THIRD_PARTY_QP}/qpc/include/*.h"    
     "${THIRD_PARTY_QP}/qpc/ports/arm-cm/qv/gnu/*.h"    
     "${AO_APP_SOURCE}/*.h"
+
+    "${THIRD_PARTY_LVGL}"
+    "${THIRD_PARTY_LVGL}/src" 
 )
 
-set(APP_INCLUDES "")
-foreach(HEADER ${HEADER_FILES})
-    get_filename_component(HEADER_DIR ${HEADER} DIRECTORY)
-    list(APPEND APP_INCLUDES ${HEADER_DIR})
-endforeach()
+set(APP_INCLUDES
+    "core/inc"
+    "lib/bsp/inc"
+    "lib/components"
+    "lib/components/adxl362"
+    "lib/components/ls013b7dh03"
+    "lib/components/max30102"
+    "lib/components/ssd1306"
+    "${THIRD_PARTY_QP}/qpc/include"
+    "${THIRD_PARTY_QP}/qpc/ports/arm-cm/qv/gnu"
+    "${AO_APP_SOURCE}"
+    "${THIRD_PARTY_LVGL}"
+    "${THIRD_PARTY_LVGL}/src"
+)
+# set(APP_INCLUDES "")
+# foreach(HEADER ${HEADER_FILES})
+#     get_filename_component(HEADER_DIR ${HEADER} DIRECTORY)
+#     list(APPEND APP_INCLUDES ${HEADER_DIR})
+# endforeach()
 
-if(APP_INCLUDES)
-    list(REMOVE_DUPLICATES APP_INCLUDES)
-endif()
+# if(APP_INCLUDES)
+#     list(REMOVE_DUPLICATES APP_INCLUDES)
+# endif()
 
-add_executable(${EXECUTABLE} ${APP_SOURCES} ${HAL_SOURCES})
+add_executable(${EXECUTABLE} ${APP_SOURCES} ${HAL_SOURCES} ${LVGL_SOURCES})
 
 target_include_directories(${EXECUTABLE} PRIVATE 
     ${APP_INCLUDES}

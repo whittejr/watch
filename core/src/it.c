@@ -13,12 +13,13 @@
 #include "qp.h"
 #include "stm32wbxx_hal.h"
 #include "rtc.h"
+#include "tick/lv_tick.h"
 
 extern UART_HandleTypeDef uart1;
 
 void SysTick_Handler(void) {
     HAL_IncTick();
-
+    // lv_tick_inc(1);
     QTIMEEVT_TICK_X(0U, &l_tick);
 }
 
