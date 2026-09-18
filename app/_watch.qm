@@ -554,7 +554,7 @@ QActive_ctor(&amp;me-&gt;super, Q_STATE_CAST(&amp;NotificationMgr_initial));
 QTimeEvt_ctorX(&amp;me-&gt;alertTimer, &amp;me-&gt;super, ALARM_TIMEOUT_SIG, 0U);</code>
   </operation>
  </package>
- <directory name="./watch/src">
+ <directory name="./active_objects">
   <file name="gui.c">
    <text>#include &quot;qpc.h&quot;
 #include &quot;bsp.h&quot;
@@ -570,32 +570,6 @@ $define${App::GuiMgr_ctor}
 
 // CRIA OS 
 $define${Components::GuiMgr}</text>
-  </file>
-  <file name="app.h">
-   <text>#ifndef APP_H_
-#define APP_H_
-
-#include &quot;qpc.h&quot;
-
-#define MAX_ALARMS 16
-
-typedef struct {
-    uint8_t id;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t weekday_mask;
-    bool    enabled;
-    uint8_t medicine_id;
-} Alarm;
-
-typedef struct {
-    QEvt super;
-    uint8_t medicine_id;
-} MedicineAlarmEvt;
-
-$declare ${App}
-
-#endif // APP_H_</text>
   </file>
   <file name="alarm.c">
    <text>#include &quot;qpc.h&quot;
@@ -629,6 +603,34 @@ $define${App::NotificationMgr_ctor}
 
 // CRIA OS 
 $define${Components::NotificationMgr}</text>
+  </file>
+ </directory>
+ <directory name="./inc">
+  <file name="app.h">
+   <text>#ifndef APP_H_
+#define APP_H_
+
+#include &quot;qpc.h&quot;
+
+#define MAX_ALARMS 16
+
+typedef struct {
+    uint8_t id;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t weekday_mask;
+    bool    enabled;
+    uint8_t medicine_id;
+} Alarm;
+
+typedef struct {
+    QEvt super;
+    uint8_t medicine_id;
+} MedicineAlarmEvt;
+
+$declare ${App}
+
+#endif // APP_H_</text>
   </file>
  </directory>
 </model>
