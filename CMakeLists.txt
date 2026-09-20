@@ -25,16 +25,22 @@ if("${HAL_SOURCES}" STREQUAL "")
     message(FATAL_ERROR "ERRO: A variável HAL_SOURCES está vazia! A HAL não será compilada.")
 endif()
 
-file(GLOB_RECURSE LVGL_SOURCES CONFIGURE_DEPENDS
+file(GLOB_RECURSE LVGL_SOURCES
     "${THIRD_PARTY_LVGL}/src/*.c"
 )
 list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/drivers")
 list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/debugging/test")
 list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/libs")
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/draw/(espressif|eve|nanovg|nema_gfx|nxp|opengles|renesas|sdl|sifli|vg_lite)")
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/osal/lv_(windows|pthread|rtthread|mqx|sdl2)")
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/stdlib/(micropython|rtthread|uefi)")
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/fs/lv_fs_(win32|uefi|posix|stdio)")
+list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/font/lv_font_(dejavu|source_han|unscii|montserrat_(8|10|12|14_aligned|16|18|20|22|24|26|28|30|32|34|36|38|40|42|44|46|48))")
 
 file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
     "core/src/*.c"
-    "lib/bsp/src/*.c"
+    "app/*.c"
+    "lib/BSP/src/*.c"
     "lib/components/*.c"
 
     "${THIRD_PARTY_QP}/qpc/src/qf/*.c"
@@ -42,22 +48,12 @@ file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
     "${THIRD_PARTY_QP}/qpc/ports/arm-cm/qv/gnu/*.c"
     "${AO_APP_SOURCE}/*.c"
 )
-file(GLOB_RECURSE HEADER_FILES CONFIGURE_DEPENDS 
-    "core/inc/*.h" 
-    "lib/bsp/inc/*.h" 
-    "lib/components/*.h"
-
-    "${THIRD_PARTY_QP}/qpc/include/*.h"    
-    "${THIRD_PARTY_QP}/qpc/ports/arm-cm/qv/gnu/*.h"    
-    "${AO_APP_SOURCE}/*.h"
-
-    "${THIRD_PARTY_LVGL}"
-    "${THIRD_PARTY_LVGL}/src" 
-)
 
 set(APP_INCLUDES
     "core/inc"
-    "lib/bsp/inc"
+    "app"
+    "app/ui"
+    "lib/BSP/inc"
     "lib/components"
     "lib/components/adxl362"
     "lib/components/ls013b7dh03"
@@ -69,29 +65,28 @@ set(APP_INCLUDES
     "${THIRD_PARTY_LVGL}"
     "${THIRD_PARTY_LVGL}/src"
 )
-# set(APP_INCLUDES "")
-# foreach(HEADER ${HEADER_FILES})
-#     get_filename_component(HEADER_DIR ${HEADER} DIRECTORY)
-#     list(APPEND APP_INCLUDES ${HEADER_DIR})
-# endforeach()
 
-# if(APP_INCLUDES)
-#     list(REMOVE_DUPLICATES APP_INCLUDES)
-# endif()
+add_library(lvgl STATIC ${LVGL_SOURCES})
+target_include_directories(lvgl PUBLIC 
+    ${THIRD_PARTY_LVGL}
+    ${THIRD_PARTY_LVGL}/src
+)
+target_compile_definitions(lvgl PUBLIC LV_CONF_INCLUDE_SIMPLE)
+target_compile_options(lvgl PRIVATE 
+    -Wno-unused-parameter
+)
 
-add_executable(${EXECUTABLE} ${APP_SOURCES} ${HAL_SOURCES} ${LVGL_SOURCES})
+add_executable(${EXECUTABLE} ${APP_SOURCES} ${HAL_SOURCES})
 
 target_include_directories(${EXECUTABLE} PRIVATE 
     ${APP_INCLUDES}
     ${HAL_INCLUDES}
 )
 
-target_compile_definitions(${EXECUTABLE} PRIVATE USE_HAL_DRIVER ${TARGET_MCU})
 target_compile_options(${EXECUTABLE} PRIVATE 
     -Wall 
     -Wpedantic 
     -Wno-unused-parameter
-    -Wno-macro-redefined
 )
 
 target_link_options(${EXECUTABLE} PRIVATE
@@ -103,7 +98,7 @@ target_link_options(${EXECUTABLE} PRIVATE
     -Wl,--gc-sections
 )
 
-target_link_libraries(${EXECUTABLE} PRIVATE -lc -lm)
+target_link_libraries(${EXECUTABLE} PRIVATE lvgl -lc -lm)
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>

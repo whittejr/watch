@@ -37,6 +37,7 @@
 #include "qpc.h"
 #include "bsp.h"
 #include "app.h"
+#include "ui_manager.h"
 
 // DECLARA OS MÉTODOS
 //$declare${Components::GuiMgr} vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -173,8 +174,15 @@ static QState GuiMgr_timekeeping(GuiMgr * const me, QEvt const * const e) {
         //${Components::GuiMgr::SM::active::timekeeping}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->timeEvt0);
-            QTimeEvt_armX(&me->timeEvt0, 1000U, 1000U);
-            bsp_display_write_string_ssd1306(0, 5, "entry->timekeeping");
+            QTimeEvt_armX(&me->timeEvt0, 1000U, 100U);
+
+            char buf[10];
+            bsp_datetime_t dt;
+            bsp_get_time(&dt);
+
+            ui_manager_update_time(dt.hour, dt.minute, dt.second);
+            ui_manager_show_watchface();
+            //bsp_display_write_string_ssd1306(0, 5, "entry->timekeeping");
             status_ = Q_HANDLED();
             break;
         }
@@ -192,8 +200,9 @@ static QState GuiMgr_timekeeping(GuiMgr * const me, QEvt const * const e) {
             bsp_datetime_t dt;
             bsp_get_time(&dt);
 
-            snprintf(buf, sizeof(buf), "%02d:%02d:%02d", dt.hour, dt.minute, dt.second);
-            bsp_display_write_string_ssd1306(30, 25, buf);
+            ui_manager_update_time(dt.hour, dt.minute, dt.second);
+            //snprintf(buf, sizeof(buf), "%02d:%02d:%02d", dt.hour, dt.minute, dt.second);
+            //bsp_display_write_string_ssd1306(30, 25, buf);
             status_ = Q_HANDLED();
             break;
         }
@@ -211,7 +220,7 @@ static QState GuiMgr_countdown_FACE(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::active::countdown_FACE}
         case Q_ENTRY_SIG: {
-            bsp_display_write_string_ssd1306(0, 5, "entry->countdown_face");
+            ui_manager_show_countdown();
             status_ = Q_HANDLED();
             break;
         }
@@ -517,9 +526,11 @@ static QState GuiMgr_medicine_popup(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::medicine_popup}
         case Q_ENTRY_SIG: {
-            bsp_display_clear_ssd1306();
-            bsp_display_write_string_ssd1306(0, 10, "TOMAR REMEDIO!");
-            bsp_display_write_string_ssd1306(0, 30, "ENTER:OK  MODE:SONECA");
+            ui_manager_set_alarm_text("TOMAR REMEDIO!");
+            ui_manager_show_alarm();
+            //bsp_display_clear_ssd1306();
+            //bsp_display_write_string_ssd1306(0, 10, "TOMAR REMEDIO!");
+            //bsp_display_write_string_ssd1306(0, 30, "ENTER:OK  MODE:SONECA");
             status_ = Q_HANDLED();
             break;
         }
@@ -528,7 +539,7 @@ static QState GuiMgr_medicine_popup(GuiMgr * const me, QEvt const * const e) {
         case MODE_SIG: {
             static const QEvt dismissEvt = { DISMISS_SIG, 0U, 0U };
             QF_PUBLISH(&dismissEvt, me);
-            status_ = Q_TRAN_HIST(me->hist_active);
+            status_ = Q_TRAN(&GuiMgr_timekeeping);
             break;
         }
         default: {

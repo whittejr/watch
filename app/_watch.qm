@@ -41,14 +41,21 @@ QActive_subscribe(&amp;me-&gt;super, MEDICINE_ALARM_SIG);</action>
       <history_glyph conn="64,107,3,2,8,-5"/>
      </history>
      <tran trig="MEDICINE_ALARM" target="../../2">
-      <tran_glyph conn="64,119,3,1,-9">
+      <tran_glyph conn="64,119,3,1,-10">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <state name="timekeeping">
       <entry>QTimeEvt_disarm(&amp;me-&gt;timeEvt0); 
-QTimeEvt_armX(&amp;me-&gt;timeEvt0, 1000U, 1000U);
-bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timekeeping&quot;);</entry>
+QTimeEvt_armX(&amp;me-&gt;timeEvt0, 1000U, 100U);
+
+char buf[10];
+bsp_datetime_t dt;
+bsp_get_time(&amp;dt);
+
+ui_manager_update_time(dt.hour, dt.minute, dt.second);
+ui_manager_show_watchface();
+//bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;timekeeping&quot;);</entry>
       <tran trig="MODE" target="../../4">
        <action>bsp_display_clear_ssd1306();</action>
        <tran_glyph conn="84,96,1,3,6">
@@ -62,8 +69,9 @@ char buf[10];
 bsp_datetime_t dt;
 bsp_get_time(&amp;dt);
 
-snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, dt.hour, dt.minute, dt.second);
-bsp_display_write_string_ssd1306(30, 25, buf);</action>
+ui_manager_update_time(dt.hour, dt.minute, dt.second);
+//snprintf(buf, sizeof(buf), &quot;%02d:%02d:%02d&quot;, dt.hour, dt.minute, dt.second);
+//bsp_display_write_string_ssd1306(30, 25, buf);</action>
        <tran_glyph conn="68,97,3,-1,4">
         <action box="0,-2,10,2"/>
        </tran_glyph>
@@ -74,7 +82,7 @@ bsp_display_write_string_ssd1306(30, 25, buf);</action>
      </state>
      <state name="countdown_FACE">
       <documentation>// SHOWS FACE</documentation>
-      <entry brief="countdown face">bsp_display_write_string_ssd1306(0, 5, &quot;entry-&gt;countdown_face&quot;);</entry>
+      <entry brief="countdown face">ui_manager_show_countdown();</entry>
       <tran trig="TOGGLE">
        <action>// STARTA OU PARA O CRONOMETRO</action>
        <tran_glyph conn="90,107,3,-1,8">
@@ -305,17 +313,19 @@ bsp_display_write_string_ssd1306(0, 40, buf);</action>
      </state_glyph>
     </state>
     <state name="medicine_popup">
-     <entry>bsp_display_clear_ssd1306();
-bsp_display_write_string_ssd1306(0, 10, &quot;TOMAR REMEDIO!&quot;);
-bsp_display_write_string_ssd1306(0, 30, &quot;ENTER:OK  MODE:SONECA&quot;);</entry>
-     <tran trig="ENTER, MODE" target="../../1" cpref="../../1/1">
+     <entry>ui_manager_set_alarm_text(&quot;TOMAR REMEDIO!&quot;);
+ui_manager_show_alarm();
+//bsp_display_clear_ssd1306();
+//bsp_display_write_string_ssd1306(0, 10, &quot;TOMAR REMEDIO!&quot;);
+//bsp_display_write_string_ssd1306(0, 30, &quot;ENTER:OK  MODE:SONECA&quot;);</entry>
+     <tran trig="ENTER, MODE" target="../../1/3">
       <action>static const QEvt dismissEvt = { DISMISS_SIG, 0U, 0U };
 QF_PUBLISH(&amp;dismissEvt, me);</action>
-      <tran_glyph conn="55,112,1,3,6,-5,2">
+      <tran_glyph conn="54,112,1,3,5,-13,9">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <state_glyph node="28,108,27,23">
+     <state_glyph node="27,108,27,23">
       <entry box="1,2,6,2"/>
      </state_glyph>
     </state>
@@ -536,7 +546,7 @@ me-&gt;alarms[1].hour = 12;
 me-&gt;alarms[1].minute = 0;
 me-&gt;alarms[1].weekday_mask = 0x7F;
 me-&gt;alarms[1].medicine_id = 102;
-me-&gt;alarms[1].enabled = true;
+me-&gt;alarms[1].enabled = false;
 
 
 </code>
@@ -559,6 +569,7 @@ QTimeEvt_ctorX(&amp;me-&gt;alertTimer, &amp;me-&gt;super, ALARM_TIMEOUT_SIG, 0U)
    <text>#include &quot;qpc.h&quot;
 #include &quot;bsp.h&quot;
 #include &quot;app.h&quot;
+#include &quot;ui_manager.h&quot;
 
 // DECLARA OS MÉTODOS
 $declare${Components::GuiMgr}
@@ -605,7 +616,7 @@ $define${App::NotificationMgr_ctor}
 $define${Components::NotificationMgr}</text>
   </file>
  </directory>
- <directory name="./inc">
+ <directory name=".">
   <file name="app.h">
    <text>#ifndef APP_H_
 #define APP_H_
@@ -629,6 +640,8 @@ typedef struct {
 } MedicineAlarmEvt;
 
 $declare ${App}
+
+void app_init(void);
 
 #endif // APP_H_</text>
   </file>

@@ -576,3 +576,13 @@ uint8_t ssd1306_basic_picture(uint8_t left, uint8_t top, uint8_t right, uint8_t 
         return 0;
     }
 }
+
+  uint8_t ssd1306_basic_gram_write_point(uint8_t x, uint8_t y, uint8_t data)
+  {
+      return ssd1306_gram_write_point(&gs_handle, x, y, data);
+  }
+
+  uint8_t ssd1306_basic_gram_update(void)
+  {
+      return ssd1306_gram_update(&gs_handle);
+  }

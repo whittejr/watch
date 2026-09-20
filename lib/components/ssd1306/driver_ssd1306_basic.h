@@ -196,6 +196,10 @@ uint8_t ssd1306_basic_picture(uint8_t left, uint8_t top, uint8_t right, uint8_t 
  * @}
  */
 
+uint8_t ssd1306_basic_gram_write_point(uint8_t x, uint8_t y, uint8_t data);
+uint8_t ssd1306_basic_gram_update(void);
+
+
 #ifdef __cplusplus
 }
 #endif

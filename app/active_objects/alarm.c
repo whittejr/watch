@@ -100,7 +100,7 @@ void AlarmMgr_ctor(void) {
     me->alarms[1].minute = 0;
     me->alarms[1].weekday_mask = 0x7F;
     me->alarms[1].medicine_id = 102;
-    me->alarms[1].enabled = true;
+    me->alarms[1].enabled = false;
 
 
 

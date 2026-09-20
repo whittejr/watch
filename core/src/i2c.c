@@ -52,7 +52,7 @@ uint8_t i2c_init(void) {
 }
 
 uint8_t i2c_write(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len) {
-    if (HAL_I2C_Mem_Write(&hi2c1, addr, reg, I2C_MEMADD_SIZE_8BIT, buf, len, 10) != HAL_OK) {
+    if (HAL_I2C_Mem_Write(&hi2c1, addr, reg, I2C_MEMADD_SIZE_8BIT, buf, len, 100) != HAL_OK) {
         return 1;
     }
     return 0;
