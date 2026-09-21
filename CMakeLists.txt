@@ -70,6 +70,7 @@ add_library(lvgl STATIC ${LVGL_SOURCES})
 target_include_directories(lvgl PUBLIC 
     ${THIRD_PARTY_LVGL}
     ${THIRD_PARTY_LVGL}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/core/inc
 )
 target_compile_definitions(lvgl PUBLIC LV_CONF_INCLUDE_SIMPLE)
 target_compile_options(lvgl PRIVATE 

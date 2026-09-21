@@ -109,6 +109,7 @@ QActive* const AO_GuiMgr = Q_ACTIVE_UPCAST(&GuiMgr_inst);
 void GuiMgr_ctor(void) {
     GuiMgr *me = &GuiMgr_inst;
     QActive_ctor(&me->super, Q_STATE_CAST(&GuiMgr_initial));
+    QTimeEvt_ctorX(&me->timeEvt0, &me->super, TICK_SIG, 0U);
 }
 //$enddef${App::GuiMgr_ctor} ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -136,12 +137,6 @@ static QState GuiMgr_initial(GuiMgr * const me, void const * const par) {
 static QState GuiMgr_active(GuiMgr * const me, QEvt const * const e) {
     QState status_;
     switch (e->sig) {
-        //${Components::GuiMgr::SM::active}
-        case Q_ENTRY_SIG: {
-            QTimeEvt_ctorX(&me->timeEvt0, &me->super, TICK_SIG, 0U);
-            status_ = Q_HANDLED();
-            break;
-        }
         //${Components::GuiMgr::SM::active}
         case Q_EXIT_SIG: {
             // save deep history
@@ -528,18 +523,27 @@ static QState GuiMgr_medicine_popup(GuiMgr * const me, QEvt const * const e) {
         case Q_ENTRY_SIG: {
             ui_manager_set_alarm_text("TOMAR REMEDIO!");
             ui_manager_show_alarm();
+            QTimeEvt_disarm(&me->timeEvt0);
+            QTimeEvt_armX(&me->timeEvt0, 5000U, 0U);
             //bsp_display_clear_ssd1306();
             //bsp_display_write_string_ssd1306(0, 10, "TOMAR REMEDIO!");
             //bsp_display_write_string_ssd1306(0, 30, "ENTER:OK  MODE:SONECA");
             status_ = Q_HANDLED();
             break;
         }
-        //${Components::GuiMgr::SM::medicine_popup::ENTER, MODE}
+        //${Components::GuiMgr::SM::medicine_popup}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->timeEvt0);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${Components::GuiMgr::SM::medicine_popup::ENTER, MODE, TICK}
         case ENTER_SIG: // intentionally fall through
-        case MODE_SIG: {
+        case MODE_SIG: // intentionally fall through
+        case TICK_SIG: {
             static const QEvt dismissEvt = { DISMISS_SIG, 0U, 0U };
             QF_PUBLISH(&dismissEvt, me);
-            status_ = Q_TRAN(&GuiMgr_timekeeping);
+            status_ = Q_TRAN_HIST(me->hist_active);
             break;
         }
         default: {
