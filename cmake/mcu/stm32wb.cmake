@@ -28,7 +28,6 @@ set(HAL_SOURCES
     "${THIRD_PARTY}/CMSIS/Device/ST/STM32WBxx/Source/Templates/system_stm32wbxx.c"
 )
 
-
 set(HAL_INCLUDES
     "${THIRD_PARTY}/STM32WBxx_HAL_Driver/Inc"
     "${THIRD_PARTY}/CMSIS/Device/ST/STM32WBxx/Include"

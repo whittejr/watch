@@ -23,6 +23,15 @@
       "type": "shell",
       "command": "openocd -f interface/stlink.cfg -f target/stm32wbx.cfg -c 'program build/debug/firmware.elf verify reset exit'", /* change to the correct target */
       "dependsOn": [
+        // "Build"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Build&Flash",
+      "type": "shell",
+      "command": "openocd -f interface/stlink.cfg -f target/stm32wbx.cfg -c 'program build/debug/firmware.elf verify reset exit'", /* change to the correct target */
+      "dependsOn": [
         "Build"
       ],
       "problemMatcher": []

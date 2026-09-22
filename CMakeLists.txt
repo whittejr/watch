@@ -35,7 +35,7 @@ list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/draw/(espressif|eve|nanovg|nema_gfx|
 list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/osal/lv_(windows|pthread|rtthread|mqx|sdl2)")
 list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/stdlib/(micropython|rtthread|uefi)")
 list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/fs/lv_fs_(win32|uefi|posix|stdio)")
-list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/font/lv_font_(dejavu|source_han|unscii|montserrat_(8|10|12|14_aligned|16|18|20|22|24|26|28|30|32|34|36|38|40|42|44|46|48))")
+# list(FILTER LVGL_SOURCES EXCLUDE REGEX "src/font/lv_font_(dejavu|source_han|unscii|montserrat_(8|10|12|14_aligned|16|18|20|22|24|26|28|30|32|34|36|38|40|42|44|46|48))");
 
 file(GLOB_RECURSE APP_SOURCES CONFIGURE_DEPENDS
     "core/src/*.c"
@@ -63,7 +63,7 @@ set(APP_INCLUDES
     "${THIRD_PARTY_QP}/qpc/ports/arm-cm/qv/gnu"
     "${AO_APP_SOURCE}"
     "${THIRD_PARTY_LVGL}"
-    "${THIRD_PARTY_LVGL}/src"
+    # "${THIRD_PARTY_LVGL}/include/"
 )
 
 add_library(lvgl STATIC ${LVGL_SOURCES})

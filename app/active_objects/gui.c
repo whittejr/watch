@@ -63,6 +63,7 @@ typedef struct GuiMgr {
 
 // private:
     QStateHandler history_active;
+    bool blink;
 
 // private state histories
     QStateHandler hist_active;
@@ -171,11 +172,11 @@ static QState GuiMgr_timekeeping(GuiMgr * const me, QEvt const * const e) {
             QTimeEvt_disarm(&me->timeEvt0);
             QTimeEvt_armX(&me->timeEvt0, 1000U, 100U);
 
-            char buf[10];
             bsp_datetime_t dt;
             bsp_get_time(&dt);
 
             ui_manager_update_time(dt.hour, dt.minute, dt.second);
+            ui_manager_update_date(dt.month, dt.year);
             ui_manager_show_watchface();
             //bsp_display_write_string_ssd1306(0, 5, "entry->timekeeping");
             status_ = Q_HANDLED();
@@ -183,21 +184,15 @@ static QState GuiMgr_timekeeping(GuiMgr * const me, QEvt const * const e) {
         }
         //${Components::GuiMgr::SM::active::timekeeping::MODE}
         case MODE_SIG: {
-            bsp_display_clear_ssd1306();
             status_ = Q_TRAN(&GuiMgr_countdown_FACE);
             break;
         }
         //${Components::GuiMgr::SM::active::timekeeping::TICK}
         case TICK_SIG: {
-            // ATUALIZA O TEMPO
-
-            char buf[10];
             bsp_datetime_t dt;
             bsp_get_time(&dt);
 
             ui_manager_update_time(dt.hour, dt.minute, dt.second);
-            //snprintf(buf, sizeof(buf), "%02d:%02d:%02d", dt.hour, dt.minute, dt.second);
-            //bsp_display_write_string_ssd1306(30, 25, buf);
             status_ = Q_HANDLED();
             break;
         }
@@ -215,7 +210,7 @@ static QState GuiMgr_countdown_FACE(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::active::countdown_FACE}
         case Q_ENTRY_SIG: {
-            ui_manager_show_countdown();
+            ui_manager_show_cronometer();
             status_ = Q_HANDLED();
             break;
         }
@@ -232,7 +227,6 @@ static QState GuiMgr_countdown_FACE(GuiMgr * const me, QEvt const * const e) {
         }
         //${Components::GuiMgr::SM::active::countdown_FACE::MODE}
         case MODE_SIG: {
-            bsp_display_clear_ssd1306();
             status_ = Q_TRAN(&GuiMgr_accel);
             break;
         }
@@ -297,7 +291,7 @@ static QState GuiMgr_time_date_FACE(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::active::time_date_FACE}
         case Q_ENTRY_SIG: {
-            bsp_display_write_string_ssd1306(0, 5, "entry->timedate_face");
+            ui_manager_show_timedate();
             status_ = Q_HANDLED();
             break;
         }
@@ -331,26 +325,32 @@ static QState GuiMgr_time_date_config(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::active::time_date_FACE::time_date_config}
         case Q_ENTRY_SIG: {
-            bsp_display_write_string_ssd1306(0, 5, "entry->time_date_conf");
-
-            char buf[10];
             bsp_datetime_t dt;
             bsp_get_time(&dt);
+            ui_manager_timedate_update_time(dt.hour, dt.minute, dt.second);
+            ui_manager_show_timedate_config();
 
             me->hour = dt.hour;
             me->minute = dt.minute;
             me->second = dt.second;
-            //me->time_format = dt.time_format;
             me->curr_mode = 0;
 
-            snprintf(buf, sizeof(buf), "%02d:%02d:%02d", me->hour, me->minute, me->second);
-            bsp_display_write_string_ssd1306(30, 28, buf);
+            // blink selected field
+            QTimeEvt_disarm(&me->timeEvt0);
+            QTimeEvt_armX(&me->timeEvt0, 500U, 500U);
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${Components::GuiMgr::SM::active::time_date_FACE::time_date_config}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->timeEvt0);
             status_ = Q_HANDLED();
             break;
         }
         //${Components::GuiMgr::SM::active::time_date_FACE::time_date_config::MODE}
         case MODE_SIG: {
             me->curr_mode = (me->curr_mode + 1) % 3;
+            ui_manager_timedate_update_time(me->hour, me->minute, me->second);
             status_ = Q_HANDLED();
             break;
         }
@@ -365,6 +365,7 @@ static QState GuiMgr_time_date_config(GuiMgr * const me, QEvt const * const e) {
                     break;
                 case 2:
                     me->second = (me->second < 59) ? me->second += 1 : 0;
+                    break;
                 case 3:
                     me->time_format = !me->time_format;
             }
@@ -373,24 +374,31 @@ static QState GuiMgr_time_date_config(GuiMgr * const me, QEvt const * const e) {
             //    snprintf(buf, sizeof(buf), "%02d:%02d:%02d 12h", me->hour, me->minute, me->second);
             //else
             //  snprintf(buf, sizeof(buf), "%02d:%02d:%02d 24h", me->hour, me->minute, me->second);
-            snprintf(buf, sizeof(buf), "%02d:%02d:%02d", me->hour, me->minute, me->second);
-
-            bsp_display_write_string_ssd1306(30, 28, buf);
+            //snprintf(buf, sizeof(buf), "%02d:%02d:%02d", me->hour, me->minute, me->second);
+            ui_manager_timedate_update_time(me->hour, me->minute, me->second);
             status_ = Q_HANDLED();
             break;
         }
         //${Components::GuiMgr::SM::active::time_date_FACE::time_date_config::ENTER}
         case ENTER_SIG: {
-            bsp_display_clear_ssd1306();
-            bsp_display_write_string_ssd1306(0, 5, "entry->timedate_face");
             bsp_datetime_t dt;
             dt.hour = me->hour;
             dt.minute = me->minute;
             dt.second = me->second;
             //dt.time_format = me->time_format;
-
             bsp_set_time(&dt);
+
+            ui_manager_timedate_update_time(dt.hour, dt.minute, dt.second);
+            ui_manager_show_timedate();
             status_ = Q_TRAN(&GuiMgr_time_date_FACE);
+            break;
+        }
+        //${Components::GuiMgr::SM::active::time_date_FACE::time_date_config::TICK}
+        case TICK_SIG: {
+            me->blink = !me->blink;
+
+            ui_manager_timedate_update_config(me->hour, me->minute, me->second, me->curr_mode, me->blink);
+            status_ = Q_HANDLED();
             break;
         }
         default: {
@@ -408,14 +416,19 @@ static QState GuiMgr_accel(GuiMgr * const me, QEvt const * const e) {
         //${Components::GuiMgr::SM::active::accel}
         case Q_ENTRY_SIG: {
             QTimeEvt_disarm(&me->timeEvt0);
-            QTimeEvt_armX(&me->timeEvt0, 50U, 100U);
-            bsp_display_write_string_ssd1306(0, 5, "entry->accel");
+            QTimeEvt_armX(&me->timeEvt0, 100U, 100U);
+            ui_manager_show_accel();
+            status_ = Q_HANDLED();
+            break;
+        }
+        //${Components::GuiMgr::SM::active::accel}
+        case Q_EXIT_SIG: {
+            QTimeEvt_disarm(&me->timeEvt0);
             status_ = Q_HANDLED();
             break;
         }
         //${Components::GuiMgr::SM::active::accel::MODE}
         case MODE_SIG: {
-            bsp_display_clear_ssd1306();
             status_ = Q_TRAN(&GuiMgr_time_date_FACE);
             break;
         }
@@ -427,15 +440,18 @@ static QState GuiMgr_accel(GuiMgr * const me, QEvt const * const e) {
         //${Components::GuiMgr::SM::active::accel::TICK}
         case TICK_SIG: {
             bsp_accel_raw_t accel;
-            char buf[32];
-            if (bsp_accel_get_xyz(&accel) == 0) {
-                snprintf(buf, sizeof(buf), "X:%d Y:%d Z:%d", accel.x, accel.y, accel.z);
+            bsp_accel_get_xyz(&accel);
+
+            ui_manager_update_xyz(accel.x, accel.y, accel.z);
+            //char buf[32];
+            //if (bsp_accel_get_xyz(&accel) == 0) {
+            //    snprintf(buf, sizeof(buf), "X:%d Y:%d Z:%d", accel.x, accel.y, accel.z);
             //    snprintf(buf, sizeof(buf), "Z:%d", accel.z);
-                bsp_display_write_string_ssd1306(0, 40, buf);
-            }
+            //    bsp_display_write_string_ssd1306(0, 40, buf);
+            //}
             //snprintf(buf, sizeof(buf), "deu erro");
 
-            bsp_display_write_string_ssd1306(0, 40, buf);
+            //bsp_display_write_string_ssd1306(0, 40, buf);
             status_ = Q_HANDLED();
             break;
         }
@@ -464,7 +480,6 @@ static QState GuiMgr_settings_FACE(GuiMgr * const me, QEvt const * const e) {
         }
         //${Components::GuiMgr::SM::active::settings_FACE::MODE}
         case MODE_SIG: {
-            bsp_display_clear_ssd1306();
             status_ = Q_TRAN(&GuiMgr_timekeeping);
             break;
         }
@@ -521,10 +536,11 @@ static QState GuiMgr_medicine_popup(GuiMgr * const me, QEvt const * const e) {
     switch (e->sig) {
         //${Components::GuiMgr::SM::medicine_popup}
         case Q_ENTRY_SIG: {
-            ui_manager_set_alarm_text("TOMAR REMEDIO!");
-            ui_manager_show_alarm();
-            QTimeEvt_disarm(&me->timeEvt0);
+            //ui_manager_set_alarm_text("TOMAR REMEDIO!");
+            ;QTimeEvt_disarm(&me->timeEvt0);
             QTimeEvt_armX(&me->timeEvt0, 5000U, 0U);
+            ui_manager_show_alarm_popup();
+
             //bsp_display_clear_ssd1306();
             //bsp_display_write_string_ssd1306(0, 10, "TOMAR REMEDIO!");
             //bsp_display_write_string_ssd1306(0, 30, "ENTER:OK  MODE:SONECA");

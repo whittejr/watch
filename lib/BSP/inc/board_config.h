@@ -13,24 +13,22 @@
 #define DISP_ON_PORT      GPIOB
 #define DISP_ON_PIN       GPIO_PIN_1
 #define DISP_EXTCOM_PORT  GPIOB
-#define DISP_EXTCOM_PIN   GPIO_PIN_2
+#define DISP_EXTCOM_PIN   GPIO_PIN_3
 
-/* SPI1 PINS (Standard for WB55) */
+/* SPI1 PINS */
 #define SCK_PORT     GPIOA
 #define SCK_PIN      GPIO_PIN_5
 #define MOSI_PORT    GPIOA
 #define MOSI_PIN     GPIO_PIN_7                                                                                                         
 
-
-
-/* I2C BUS (Restored for compilation) */
+/* I2C BUS */
 #define I2C_INSTANCE      I2C1
 #define I2C_SDA_PORT      GPIOA
 #define I2C_SDA_PIN       GPIO_PIN_10
 #define I2C_SCL_PORT      GPIOA
 #define I2C_SCL_PIN       GPIO_PIN_9
 
-/* BUTTONS & ACCEL (Restored for compilation) */
+/* BUTTONS & ACCEL */
 #define BUTTON_PORT       GPIOB
 #define BUTTON_PIN        GPIO_PIN_9
 #define ACCEL_CS_PORT     GPIOA

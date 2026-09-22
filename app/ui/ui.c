@@ -1,33 +1,38 @@
+/**
+* @file    ui.c
+* @brief   none
+* @version 0.1.0
+* @author  Alessandro Davi
+* @date    2026-09-22
+*/
+
 #include "ui.h"
-#include "include/lvgl/api_map/lv_api_map_v9_2.h"
-#include "screens.h"
 
-#include <string.h>
-
-static int16_t currentScreen = -1;
-
-static lv_obj_t *getLvglObjectFromIndex(int32_t index) {
-    if (index == -1) {
-        return 0;
+void ui_init(void) {
+    lv_display_t *disp = lv_display_get_default();
+    if(disp) {
+        lv_theme_t *theme = lv_theme_mono_init(disp,true, LV_FONT_DEFAULT);
+        lv_display_set_theme(disp, theme);
     }
-    return ((lv_obj_t **)&objects)[index];
 }
 
-void loadScreen(enum ScreensEnum screenId) {
-    currentScreen = screenId - 1;
-    lv_obj_t *screen = getLvglObjectFromIndex(currentScreen);
-    lv_scr_load_anim(screen, LV_SCR_LOAD_ANIM_FADE_IN, 0, 0, false);
+
+lv_obj_t *create_box(lv_obj_t *parent, int32_t width, int32_t height) {
+	lv_obj_t *obj = lv_obj_create(parent);
+	lv_obj_set_size(obj, width, height);
+
+    lv_obj_set_style_border_width(obj, 0, 0);
+    lv_obj_set_style_radius(obj, 0, 0);
+    lv_obj_set_style_pad_all(obj, 0, 0);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, 0);
+
+	return obj;
 }
 
-void ui_init() {
-    create_screens();
-    lv_display_t *disp = lv_display_get_default();                                                                                                      
-    lv_theme_t *theme = lv_theme_mono_init(disp, true, LV_FONT_DEFAULT);                                                                                
-    lv_display_set_theme(disp, theme);
-    loadScreen(SCREEN_ID_WATCHFACE);
+lv_obj_t *create_label(lv_obj_t *parent, const lv_font_t* font) {
+	lv_obj_t *label = lv_label_create(parent);
+	lv_obj_set_style_text_font(label, font, 0);
 
+	return label;
 }
 
-void ui_tick() {
-    tick_screen(currentScreen);
-}

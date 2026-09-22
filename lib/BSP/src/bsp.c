@@ -35,8 +35,6 @@ void bsp_init(void) {
     rtc_init();
     bsp_display_init_ssd1306();
     bsp_accel_init();
-
-
 }
 
 // ACELEROMETRO
@@ -488,7 +486,7 @@ void bsp_get_time(bsp_datetime_t *dt) {
     dt->second = sTime.Seconds;
     dt->day    = sDate.Date;
     dt->month  = sDate.Month;
-    dt->year   = 2000 + sDate.Year;
+    dt->year   = sDate.Year;
 }
 
 void bsp_set_time(const bsp_datetime_t *dt) {

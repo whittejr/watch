@@ -12,5 +12,7 @@
 #include "main.h"
 
 uint8_t i2c_init(void);
+uint8_t i2c_deinit(void);
+uint8_t i2c_write(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len);
 
 #endif // I2C_H

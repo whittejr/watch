@@ -1,21 +1,18 @@
-#ifndef EEZ_LVGL_UI_GUI_H
-#define EEZ_LVGL_UI_GUI_H
+/**
+ * @file ui.h
+ * @brief  none
+ * @version 0.1
+ * @author Alessandro Davi
+ * @date 2026-09-22
+ */
 
-#include <lvgl.h>
+#ifndef UI_H
+#define UI_H
 
-#include "screens.h"
+#include "lvgl.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void ui_init(void);
+lv_obj_t *create_box(lv_obj_t *parent, int32_t width, int32_t height);
+lv_obj_t *create_label(lv_obj_t *parent, const lv_font_t* font);
 
-void ui_init();
-void ui_tick();
-
-void loadScreen(enum ScreensEnum screenId);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // EEZ_LVGL_UI_GUI_H
+#endif // UI_H
